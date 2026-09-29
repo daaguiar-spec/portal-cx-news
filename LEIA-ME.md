@@ -64,7 +64,7 @@ O site funciona em duas etapas:
 
 ## Parte 3: publicar matérias no dia a dia
 
-1. Acesse **seusite.vercel.app/#redacao** (a Redação não aparece no menu para os leitores).
+1. Clique no botão **Redação** (com o cadeado), no alto da página ou no rodapé.
 2. Entre com o e-mail e a senha criados no Supabase.
 3. Clique em **+ Nova matéria** e preencha título, linha fina, texto, editoria, tipo (Notícia ou Artigo/Opinião), imagem, autor e tags.
 4. Clique em **Publicar**. Ela entra na capa na hora.

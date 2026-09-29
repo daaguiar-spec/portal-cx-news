@@ -482,12 +482,12 @@ function renderShell(){
   $("#slogan").textContent=c.slogan||""; $("#rodape-sobre").textContent=c.sobre||"";
   document.title = n;
   $("#hoje").textContent = dataLonga(new Date()).replace(/^./,x=>x.toUpperCase());
-  $("#util-dir").innerHTML = S.editor ? `<a class="util-btn" href="#redacao">Redação</a>${S.demo?"":` <button data-acao="sair">Sair</button>`}` : "";
+  $("#util-dir").innerHTML = `<a class="util-btn" href="#redacao"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Redação</a>${S.editor&&!S.demo?` <button data-acao="sair">Sair</button>`:""}`;
   const r=rota();
   const itens=[["","Capa"],...Object.entries(EDITORIAS).map(([k,e])=>[k,e.nome]),["opiniao","Opinião"]];
   const ativo = r.startsWith("m-") ? (S.artigos.find(a=>"m-"+a.id===r)?.editoria) : r;
   $("#nav").innerHTML = itens.map(([k,t])=>`<a href="#${k}" ${EDITORIAS[k]?`data-ed="${k}"`:""} class="${ativo===k?"on":""}">${t}</a>`).join("");
-  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="#${k}">${t}</a>`).join("") + (S.editor?`<a href="#redacao">Redação</a>`:"");
+  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="#${k}">${t}</a>`).join("") + `<a href="#redacao">Redação</a>`;
   const ult = ordenar(publicados()).slice(0,6);
   $("#ticker").hidden = !ult.length || r.startsWith("redacao");
   $("#ticker-list").innerHTML = ult.map(a=>`<a href="${link(a)}"><time>${esc(horaCurta(a.publicadoEm))}</time><span>${esc(a.titulo)}</span></a>`).join("");
