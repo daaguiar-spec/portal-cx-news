@@ -60,8 +60,12 @@ nav.ed a.on{color:var(--ink);border-bottom-color:var(--ed,var(--ink))}
 .ticker{background:var(--accent-soft);border-bottom:1px solid var(--line)}
 .ticker .wrap{display:flex;align-items:center;gap:14px;min-height:42px;overflow:hidden}
 .ticker b{flex:none;background:var(--accent);color:var(--on-accent);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:2px}
-.ticker-list{display:flex;gap:26px;overflow-x:auto;scrollbar-width:none;min-width:0}
-.ticker-list a{white-space:nowrap;font-size:13.5px;font-weight:500}
+.ticker-list{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.ticker-track{display:flex;gap:40px;width:max-content;padding-left:40px;animation:correr var(--dur,40s) linear infinite}
+.ticker-list:hover .ticker-track,.ticker-list:focus-within .ticker-track{animation-play-state:paused}
+@keyframes correr{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker-list{overflow-x:auto}.ticker-track{animation:none}}
+.ticker-list a{white-space:nowrap;font-size:12.5px;font-weight:500}
 .ticker-list a time{color:var(--accent);font-weight:700;margin-right:6px;font-variant-numeric:tabular-nums}
 .ticker-list a:hover span{text-decoration:underline}
 
@@ -79,6 +83,20 @@ main{padding-block:26px 60px}
 .capa-gen svg{position:absolute;right:10px;top:10px;width:38%;opacity:.35}
 
 /* ---- home ---- */
+.pub{margin-bottom:22px}
+.pub-rot{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.pub-caixa{position:relative;border-radius:var(--r);overflow:hidden;background:var(--soft);aspect-ratio:4/1;max-width:100%}
+.pub-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease;display:block}
+.pub-slide.on{opacity:1;z-index:1}
+.pub-slide img{width:100%;height:100%;object-fit:cover;display:block}
+.pub-pontos{position:absolute;right:10px;bottom:8px;z-index:2;display:flex;gap:6px}
+.pub-pontos button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.pub-pontos button.on{background:#fff}
+.pub-vazia{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border:2px dashed var(--line);background:var(--soft);color:var(--muted);font-size:13px;text-align:center;padding:10px}
+.pub-vazia b{color:var(--ink-2);font-size:14px}
+.pub-edit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.pub-edit .img-prev img{aspect-ratio:4/1;object-fit:cover}
+@media (max-width:900px){.pub-edit{grid-template-columns:minmax(0,1fr)}}
 .hero{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,.95fr);gap:28px}
 .manchete h1{font-size:clamp(28px,3.6vw,42px);line-height:1.08;margin:12px 0 10px}
 .manchete p.fina{font-family:var(--f-display);font-size:18.5px;color:var(--ink-2);margin:0 0 10px;line-height:1.4}
@@ -262,7 +280,7 @@ const EDITORIAS = {
 };
 const S = {
   artigos:[], rascunhos:[], config:{nome:"CX em Foco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
-  carregado:false, editor:false, demo:false, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
+  carregado:false, editor:false, demo:false, pub:null, pubForm:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
 };
 
 /* ---------- utilidades ---------- */
@@ -327,7 +345,7 @@ function ordenar(l){ return [...l].sort((a,b)=> new Date(b.publicadoEm)-new Date
 
 /* ---------- telas ---------- */
 function telaVazia(){
-  return `<div class="vazio"><span class="kicker">Portal pronto</span><h2 style="margin-top:8px">Nenhuma matéria publicada ainda</h2>
+  return `${blocoPub()}<div class="vazio"><span class="kicker">Portal pronto</span><h2 style="margin-top:8px">Nenhuma matéria publicada ainda</h2>
   <p>${S.editor?"Escreva a primeira notícia ou artigo na Redação. Ela aparece aqui como manchete assim que você publicar.":"Volte em breve para ler as primeiras notícias e artigos."}</p>
   ${S.editor?`<a class="btn pri" href="#redacao-nova">Escrever primeira matéria</a>`:""}</div>`;
 }
@@ -341,7 +359,7 @@ function telaHome(){
   const secund = [...destaques.slice(1), ...base.filter(a=>!a.destaque)].filter(a=>a!==manchete).slice(0,2);
   const usados = new Set([manchete, ...secund].map(a=>a.id));
   let h = `<section class="hero">
-    <article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article>
+    <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
     <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}</div>
     <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}</aside>
   </section>`;
@@ -401,7 +419,7 @@ function telaMateria(id){
 /* ---------- redação ---------- */
 function abas(on){
   return `<div class="redacao-top"><div><span class="kicker">Área restrita</span><h1>Redação</h1></div><a class="btn pri" href="#redacao-nova">+ Nova matéria</a></div>
-  <nav class="abas"><a href="#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
+  <nav class="abas"><a href="#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
 }
 function telaRedacaoLista(){
   const linhas = [...S.rascunhos.map(a=>({...a,_st:"ras"})), ...ordenar(S.artigos).map(a=>({...a,_st:"pub"}))];
@@ -490,7 +508,10 @@ function renderShell(){
   $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="#${k}">${t}</a>`).join("") + `<a href="#redacao">Redação</a>`;
   const ult = ordenar(publicados()).slice(0,6);
   $("#ticker").hidden = !ult.length || r.startsWith("redacao");
-  $("#ticker-list").innerHTML = ult.map(a=>`<a href="${link(a)}"><time>${esc(horaCurta(a.publicadoEm))}</time><span>${esc(a.titulo)}</span></a>`).join("");
+  const itensT = ult.map(a=>`<a href="${link(a)}"><time>${esc(horaCurta(a.publicadoEm))}</time><span>${esc(a.titulo)}</span></a>`).join("");
+  const chaveT = ult.map(a=>a.id+a.titulo).join("|");
+  if(chaveT!==renderShell._t){ renderShell._t=chaveT;
+    $("#ticker-list").innerHTML = `<div class="ticker-track" style="--dur:${Math.max(25, ult.length*9)}s">${itensT}${itensT.replace(/<a /g,'<a tabindex="-1" aria-hidden="true" ')}</div>`; }
 }
 function render(scrollTop){
   renderShell();
@@ -506,12 +527,14 @@ function render(scrollTop){
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
   else if(r==="redacao-config") h=telaRedacaoConfig();
+  else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); h=telaRedacaoPub(); }
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
+  iniciarCarrossel();
   if(scrollTop) window.scrollTo(0,0);
 }
-function formAberto(){ const r=rota(); return r==="redacao-nova"||r==="redacao-editar"||r==="redacao-config"; }
+function formAberto(){ const r=rota(); return r==="redacao-nova"||r==="redacao-editar"||r==="redacao-config"||r==="redacao-pub"; }
 function renderSeguro(){ if(formAberto()) renderShell(); else render(false); }
 
 /* ---------- formulário ---------- */
@@ -555,17 +578,17 @@ async function salvarMateria(){
     erro.hidden=false;
   }
 }
-function comprimir(file){
+function comprimir(file, maxW=1400, maxLen=170000){
   return new Promise((res,rej)=>{
     const url=URL.createObjectURL(file), img=new Image();
     img.onload=()=>{
-      let w=Math.min(1400,img.naturalWidth), q=.82, out="";
+      let w=Math.min(maxW,img.naturalWidth), q=.82, out="";
       const cv=document.createElement("canvas"), cx=cv.getContext("2d");
       for(let i=0;i<10;i++){
         cv.width=w; cv.height=Math.round(img.naturalHeight*w/img.naturalWidth);
         cx.drawImage(img,0,0,cv.width,cv.height);
         out=cv.toDataURL("image/jpeg",q);
-        if(out.length<170000) break;
+        if(out.length<maxLen) break;
         if(q>.55) q-=.08; else w=Math.round(w*.82);
       }
       URL.revokeObjectURL(url); res(out);
@@ -585,6 +608,7 @@ window.addEventListener("hashchange",()=>{
   const r=rota();
   if(r==="redacao-nova"){ abrirForm(null); }
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
+  if(r!=="redacao-pub") S.pubForm=null;
   S.confirmar=null; render(true);
 });
 document.addEventListener("submit",e=>{
@@ -596,6 +620,8 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="form-login") entrar();
 });
 document.addEventListener("click",async e=>{
+  const tp=e.target.closest("[data-pubtirar]");
+  if(tp){ lerPubForm(); S.pubForm[+tp.dataset.pubtirar].imagem=""; render(); return; }
   const t=e.target.closest("[data-editar],[data-pedir],[data-excluir],[data-destaque],[data-acao],[data-fmt],[data-tag]"); if(!t) return;
   if(t.dataset.tag){ e.preventDefault(); S.busca=t.dataset.tag; if(rota()==="busca") render(true); else location.hash="busca"; return; }
   if(t.dataset.fmt){ formatar(t.dataset.fmt); return; }
@@ -613,6 +639,7 @@ document.addEventListener("click",async e=>{
   }
   const ac=t.dataset.acao;
   if(ac==="sair"){ await API.sair(); S.editor=false; await recarregar(); location.hash=""; render(true); toast("Você saiu da Redação"); return; }
+  if(ac==="salvar-pub"){ t.disabled=true; await salvarPub(); t.disabled=false; return; }
   if(ac==="cancelar"){ S.confirmar=null; render(); }
   if(ac==="pedir-exemplos"){ S.confirmar="exemplos"; render(); }
   if(ac==="apagar-exemplos"){
@@ -629,6 +656,12 @@ document.addEventListener("click",async e=>{
   }
 });
 document.addEventListener("change",async e=>{
+  if(e.target.dataset && e.target.dataset.pubimg!==undefined && e.target.files[0]){
+    const i=+e.target.dataset.pubimg; lerPubForm();
+    try{ S.pubForm[i].imagem = await comprimir(e.target.files[0], 1200, 150000); render(); toast("Imagem carregada"); }
+    catch{ toast("Não foi possível ler essa imagem. Tente um JPG ou PNG."); }
+    return;
+  }
   if(e.target.id!=="f-img"||!e.target.files[0]) return;
   lerForm();
   try{ S.form.imagem = await comprimir(e.target.files[0]); render(); toast("Imagem carregada"); }
@@ -638,6 +671,66 @@ async function salvarConfig(){
   const c={nome:$("#c-nome").value.trim()||"CX em Foco",slogan:$("#c-slogan").value.trim(),sobre:$("#c-sobre").value.trim(),autorPadrao:$("#c-autor").value.trim()};
   try{ await API.salvarConfig(c); S.config={...S.config,...c}; renderShell(); toast("Configurações salvas"); }
   catch{ toast("Não foi possível salvar as configurações."); }
+}
+
+/* ---------- publicidade ---------- */
+const PUB_VAZIA = () => [0,1,2].map(()=>({imagem:"",link:"",alt:"",ativo:true}));
+function pubItens(todos){
+  const l = (S.pub && Array.isArray(S.pub.itens)) ? S.pub.itens : [];
+  if(todos){ const b=PUB_VAZIA(); l.slice(0,3).forEach((x,i)=>b[i]={...b[i],...x}); return b; }
+  return l.filter(x=>x && x.imagem && x.ativo!==false).slice(0,3);
+}
+function blocoPub(){
+  const l = pubItens(false);
+  if(!l.length){
+    return S.editor ? `<div class="pub"><div class="pub-rot">Publicidade</div><a href="#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário</b><span>Só a Redação vê este aviso. Clique para cadastrar até 3 imagens.</span></a></div>` : "";
+  }
+  return `<div class="pub" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa" id="pub-caixa">
+    ${l.map((x,i)=>{ const img=`<img src="${esc(x.imagem)}" alt="${esc(x.alt||"Publicidade")}">`;
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+    ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" data-pub="${i}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
+  </div></div>`;
+}
+function iniciarCarrossel(){
+  clearInterval(iniciarCarrossel._t);
+  const cx=document.getElementById("pub-caixa"); if(!cx) return;
+  const slides=[...cx.querySelectorAll(".pub-slide")], pts=[...cx.querySelectorAll(".pub-pontos button")];
+  if(slides.length<2) return;
+  let i=0;
+  const ir=n=>{ i=(n+slides.length)%slides.length; slides.forEach((s,k)=>s.classList.toggle("on",k===i)); pts.forEach((b,k)=>b.classList.toggle("on",k===i)); };
+  const tocar=()=>{ clearInterval(iniciarCarrossel._t); iniciarCarrossel._t=setInterval(()=>ir(i+1),5000); };
+  pts.forEach((b,k)=>b.onclick=()=>{ ir(k); tocar(); });
+  tocar();
+}
+function telaRedacaoPub(){
+  const l=S.pubForm;
+  return abas("pub") + `<p style="color:var(--ink-2);margin:0 0 18px;max-width:70ch">Cadastre até <b>3 imagens</b>. Elas aparecem na capa, logo abaixo da faixa de Últimas, na coluna da esquerda, e trocam sozinhas a cada 5 segundos. Tamanho ideal: <b>1200 × 300 pixels</b> (formato 4:1).</p>
+  <div class="pub-edit">${l.map((x,i)=>`<div class="painel">
+    <div class="campo"><label>Anúncio ${i+1}</label>
+      <div class="img-prev">${x.imagem?`<img src="${esc(x.imagem)}" alt="">`:`<small style="color:var(--muted)">Nenhuma imagem.</small>`}
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn pequeno" for="p-img-${i}" style="cursor:pointer">${x.imagem?"Trocar imagem":"Enviar imagem"}</label>${x.imagem?`<button type="button" class="btn pequeno perigo" data-pubtirar="${i}">Remover</button>`:""}</div>
+        <input type="file" id="p-img-${i}" data-pubimg="${i}" accept="image/*" hidden>
+      </div></div>
+    <div class="campo"><label for="p-link-${i}">Link ao clicar (opcional)</label><input id="p-link-${i}" data-publink="${i}" value="${esc(x.link)}" placeholder="https://site-do-anunciante.com.br"></div>
+    <div class="campo"><label for="p-alt-${i}">Nome do anunciante</label><input id="p-alt-${i}" data-pubalt="${i}" value="${esc(x.alt)}" placeholder="Ex.: Empresa X"></div>
+    <label class="check"><input type="checkbox" data-pubativo="${i}" ${x.ativo!==false?"checked":""}> Exibir no site</label>
+  </div>`).join("")}</div>
+  <div id="p-erro" hidden style="color:var(--danger);font-size:13px;font-weight:600;margin-top:14px"></div>
+  <div style="margin-top:18px;display:flex;gap:8px"><button class="btn pri" data-acao="salvar-pub">Salvar publicidade</button><a class="btn" href="#">Ver na capa</a></div>`;
+}
+function lerPubForm(){
+  S.pubForm.forEach((x,i)=>{
+    const l=document.querySelector(`[data-publink="${i}"]`), a=document.querySelector(`[data-pubalt="${i}"]`), c=document.querySelector(`[data-pubativo="${i}"]`);
+    if(l) x.link=l.value.trim(); if(a) x.alt=a.value.trim(); if(c) x.ativo=c.checked;
+  });
+}
+async function salvarPub(){
+  lerPubForm();
+  const erro=$("#p-erro");
+  for(const x of S.pubForm){ if(x.link && !/^https?:\/\//i.test(x.link)) x.link="https://"+x.link; }
+  const dados={itens:S.pubForm.filter(x=>x.imagem).map(x=>({imagem:x.imagem,link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
+  try{ await API.salvarPub(dados); S.pub=dados; erro.hidden=true; toast("Publicidade salva"); }
+  catch(e){ erro.textContent="Não foi possível salvar a publicidade. Tente imagens menores. (Detalhe técnico: "+String(e?.message||e)+")"; erro.hidden=false; }
 }
 
 /* ---------- login ---------- */
@@ -844,13 +937,13 @@ const API = usarSupabase ? {
   async carregar(){
     const [m,c] = await Promise.all([
       sb.from("materias").select("id,status,publicado_em,dados").order("publicado_em",{ascending:false}).limit(1000),
-      sb.from("config").select("dados").eq("id","site").maybeSingle()
+      sb.from("config").select("id,dados").in("id",["site","publicidade"])
     ]);
     if(m.error) throw m.error;
     const l = (m.data||[]).map(r=>({...r.dados, id:r.id, publicadoEm:r.publicado_em, _status:r.status}));
     S.artigos = l.filter(a=>a._status==="publicado");
     S.rascunhos = S.editor ? l.filter(a=>a._status==="rascunho") : [];
-    if(c.data?.dados) S.config = {...S.config, ...c.data.dados};
+    for(const r of (c.data||[])){ if(r.id==="site") S.config={...S.config,...r.dados}; if(r.id==="publicidade") S.pub=r.dados; }
   },
   async salvar(id,status,dados){
     const {error} = await sb.from("materias").upsert({id, status, publicado_em:dados.publicadoEm, dados, atualizado_em:new Date().toISOString()});
@@ -858,6 +951,7 @@ const API = usarSupabase ? {
   },
   async excluir(id){ const {error} = await sb.from("materias").delete().eq("id",id); if(error) throw error; },
   async salvarConfig(c){ const {error} = await sb.from("config").upsert({id:"site", dados:c}); if(error) throw error; },
+  async salvarPub(p){ const {error} = await sb.from("config").upsert({id:"publicidade", dados:p}); if(error) throw error; },
   async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email:email.toLowerCase(), password:senha}); if(error) throw error; },
   async sair(){ await sb.auth.signOut(); }
 } : {
@@ -865,10 +959,11 @@ const API = usarSupabase ? {
   async iniciar(){ S.editor=false; S.demo=true; },
   ler(){ try{ const j=JSON.parse(localStorage.getItem(this.CHAVE)||"null"); if(j) return j; }catch{} return {materias:EXEMPLOS.map(a=>({...a,_status:"publicado"})), config:null}; },
   gravar(d){ try{ localStorage.setItem(this.CHAVE, JSON.stringify(d)); }catch{ throw new Error("armazenamento"); } },
-  async carregar(){ const d=this.ler(); S.artigos=d.materias.filter(a=>a._status==="publicado"); S.rascunhos=d.materias.filter(a=>a._status==="rascunho"); if(d.config) S.config={...S.config,...d.config}; },
+  async carregar(){ const d=this.ler(); S.artigos=d.materias.filter(a=>a._status==="publicado"); S.rascunhos=d.materias.filter(a=>a._status==="rascunho"); if(d.config) S.config={...S.config,...d.config}; if(d.publicidade) S.pub=d.publicidade; },
   async salvar(id,status,dados){ const d=this.ler(); d.materias=d.materias.filter(a=>a.id!==id); d.materias.push({...dados,id,_status:status}); this.gravar(d); },
   async excluir(id){ const d=this.ler(); d.materias=d.materias.filter(a=>a.id!==id); this.gravar(d); },
   async salvarConfig(c){ const d=this.ler(); d.config=c; this.gravar(d); },
+  async salvarPub(p){ const d=this.ler(); d.publicidade=p; this.gravar(d); },
   async entrar(){ throw new Error("sem-banco"); }, async sair(){}
 };
 async function recarregar(){
