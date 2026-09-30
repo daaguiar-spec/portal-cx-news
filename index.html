@@ -26,6 +26,8 @@
   --r:4px; color-scheme:light;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.ticker,.ticker *{-webkit-text-size-adjust:none;text-size-adjust:none}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;margin:0}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -250,7 +252,7 @@ footer nav a:hover{color:var(--accent)}
   .grade4{grid-template-columns:minmax(0,1fr)}
   .sec-item{grid-template-columns:minmax(0,1fr);gap:10px}
   .busca-top input{width:140px}
-  .ticker-list a{font-size:10.5px}
+  .ticker-list a,.ticker-list a span,.ticker-list a time{font-size:10.5px;line-height:1.3}
   .ticker b{font-size:10px;padding:3px 6px}
   .ticker .wrap{gap:10px;min-height:38px}
   .pub{margin-bottom:18px}
