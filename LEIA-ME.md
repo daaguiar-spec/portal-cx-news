@@ -1,5 +1,7 @@
 # CX em Foco: como colocar o portal no ar
 
+> ✅ **Parte 2 (Supabase) já está feita.** O `config.js` já tem as chaves do seu projeto, e o login da Redação é **comercial@sinaspeonline.com**. Falta só a **Parte 1**: publicar no Vercel.
+
 Na pasta você encontra estes arquivos:
 
 | Arquivo | Para que serve |

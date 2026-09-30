@@ -22,7 +22,7 @@ create table if not exists public.config (
 create or replace function public.eh_editor() returns boolean
 language sql stable as $$
   select lower(coalesce(auth.jwt() ->> 'email', '')) in (
-    'seu-email@exemplo.com'
+    'comercial@sinaspeonline.com'
   );
 $$;
 
