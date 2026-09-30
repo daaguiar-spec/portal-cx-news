@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/materia/:slug", "destination": "/api/pagina?slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/robots.txt", "destination": "/api/robots" }
+  ]
+}

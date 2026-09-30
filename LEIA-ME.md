@@ -101,3 +101,18 @@ Deixe uma linha em branco entre os parágrafos.
 - **A Redação diz que o login ainda não está ativo:** o `config.js` ainda está vazio ou não foi publicado de novo.
 - **"Sua conta não tem permissão para publicar":** o e-mail do login é diferente do e-mail colocado no `supabase.sql`. Corrija o arquivo e rode-o de novo no SQL Editor.
 - **As matérias de exemplo** só existem no modo demonstração. Com o Supabase ligado, o portal começa vazio, pronto para as suas matérias.
+
+---
+
+## Google e compartilhamento (SEO)
+
+- Cada matéria tem endereço próprio: `seusite/materia/nome-da-materia`.
+- O Vercel monta cada matéria no servidor (pasta `api/`), com título, descrição, imagem e dados estruturados para o Google, e com prévia bonita no WhatsApp e no LinkedIn.
+- Mapa do site automático: `seusite/sitemap.xml`. Robots: `seusite/robots.txt`.
+- Arquivos envolvidos: `vercel.json`, pasta `api/` e `og-padrao.jpg` (imagem usada quando a matéria não tem foto).
+
+**Cadastrar no Google Search Console (uma vez só):**
+1. Acesse search.google.com/search-console e clique em **Adicionar propriedade → Prefixo do URL**.
+2. Digite o endereço do site (ex.: `https://portal-cx-news.vercel.app`).
+3. Verifique pelo método **Tag HTML**: copie só o código `content="..."` e peça para colocá-lo no `index.html`.
+4. Depois de verificado, vá em **Sitemaps**, digite `sitemap.xml` e clique em **Enviar**.
