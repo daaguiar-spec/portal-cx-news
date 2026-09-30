@@ -551,6 +551,7 @@ async function salvarMateria(){
     erro.textContent = /row-level security|permission/i.test(msg) ? "Sua conta não tem permissão para publicar. Confira se o e-mail do login é o mesmo que está no arquivo supabase.sql." :
       e?.message==="armazenamento" ? "O navegador não conseguiu guardar a matéria (modo demonstração). Tente uma imagem menor." :
       "Não foi possível salvar agora. Verifique sua conexão e tente de novo.";
+    if(msg && msg!=="armazenamento") erro.textContent += " (Detalhe técnico: " + msg + ")";
     erro.hidden=false;
   }
 }
@@ -654,7 +655,14 @@ async function entrar(){
   if(!email||!senha){ erro.textContent="Preencha e-mail e senha."; erro.hidden=false; return; }
   b.disabled=true; b.textContent="Entrando…";
   try{ await API.entrar(email,senha); S.editor=true; await recarregar(); render(true); toast("Bem-vindo à Redação"); }
-  catch(e){ b.disabled=false; b.textContent="Entrar"; erro.textContent = e?.message==="sem-banco" ? "O login ainda não está ativo: conecte o Supabase seguindo o arquivo LEIA-ME." : "E-mail ou senha incorretos."; erro.hidden=false; }
+  catch(e){ b.disabled=false; b.textContent="Entrar"; const m=String(e?.message||"");
+    erro.textContent = m==="sem-banco" ? "O login ainda não está ativo: conecte o Supabase seguindo o arquivo LEIA-ME." :
+      /invalid login credentials/i.test(m) ? "E-mail ou senha incorretos. (Supabase: Invalid login credentials)" :
+      /not confirmed/i.test(m) ? "Este e-mail ainda não foi confirmado no Supabase. Recrie o usuário marcando “Auto Confirm User”." :
+      /api ?key/i.test(m) ? "A chave do Supabase no config.js não foi aceita. Confira a chave publicável." :
+      /fetch|network/i.test(m) ? "Não foi possível falar com o Supabase. Confira a URL no config.js e sua conexão." :
+      "Não foi possível entrar. Detalhe técnico: " + m;
+    erro.hidden=false; }
 }
 
 /* ---------- dados: Supabase (produção) ou navegador (demonstração) ---------- */
@@ -850,7 +858,7 @@ const API = usarSupabase ? {
   },
   async excluir(id){ const {error} = await sb.from("materias").delete().eq("id",id); if(error) throw error; },
   async salvarConfig(c){ const {error} = await sb.from("config").upsert({id:"site", dados:c}); if(error) throw error; },
-  async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email, password:senha}); if(error) throw error; },
+  async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email:email.toLowerCase(), password:senha}); if(error) throw error; },
   async sair(){ await sb.auth.signOut(); }
 } : {
   CHAVE:"cxemfoco-demo",
