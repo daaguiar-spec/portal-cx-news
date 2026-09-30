@@ -86,6 +86,10 @@ main{padding-block:26px 60px}
 
 /* ---- home ---- */
 .pub{margin-bottom:22px}
+.pub-lat{margin:26px 0 0}
+.pub-lat .pub-caixa{aspect-ratio:6/5}
+.pub-edit .img-prev.lat img{aspect-ratio:6/5;max-width:220px}
+.pub-secao{font-family:var(--f-display);font-size:24px;margin:34px 0 6px}
 .pub-rot{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .pub-caixa{position:relative;border-radius:var(--r);overflow:hidden;background:var(--soft);aspect-ratio:4/1;max-width:100%}
 .pub-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease;display:block}
@@ -295,7 +299,7 @@ const EDITORIAS = {
 };
 const S = {
   artigos:[], rascunhos:[], config:{nome:"CX em Foco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
-  carregado:false, editor:false, demo:false, pub:null, pubForm:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
+  carregado:false, editor:false, demo:false, pub:null, pubForm:null, latForm:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
 };
 
 /* ---------- utilidades ---------- */
@@ -377,7 +381,7 @@ function telaHome(){
   let h = `<section class="hero">
     <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
     <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}</div>
-    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}</aside>
+    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
   </section>`;
   for(const [k,e] of Object.entries(EDITORIAS)){
     const l = noticias.filter(a=>a.editoria===k && !usados.has(a.id)).slice(0,4);
@@ -400,7 +404,7 @@ function telaSecao(k){
   const nome = opin?"Opinião":EDITORIAS[k].nome, desc = opin?"Artigos assinados, análises e pontos de vista.":EDITORIAS[k].desc;
   return `<header class="sec-head" ${opin?"":`data-ed="${k}"`}><h1>${esc(nome)}</h1><p>${esc(desc)}</p></header>
   <div class="sec-layout"><div>${l.length?listaSecao(l):`<p class="meta" style="font-size:15px">Ainda não há matérias nesta editoria.</p>`}</div>
-  <aside>${bloco("Últimas")}${ultimasLista(todos.slice(0,6))}</aside></div>`;
+  <aside>${bloco("Últimas")}${ultimasLista(todos.slice(0,6))}${blocoPubLat()}</aside></div>`;
 }
 function telaBusca(){
   const q = S.busca.trim().toLowerCase();
@@ -559,7 +563,7 @@ function render(scrollTop){
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
   else if(r==="redacao-config") h=telaRedacaoConfig();
-  else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); h=telaRedacaoPub(); }
+  else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); if(!S.latForm) S.latForm=JSON.parse(JSON.stringify(latItens(true))); h=telaRedacaoPub(); }
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
@@ -646,7 +650,7 @@ function aoMudarRota(){
   const r=rota();
   if(r==="redacao-nova"){ abrirForm(null); }
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
-  if(r!=="redacao-pub") S.pubForm=null;
+  if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; }
   S.confirmar=null; render(true);
 }
 window.addEventListener("hashchange",aoMudarRota);
@@ -672,6 +676,8 @@ document.addEventListener("submit",e=>{
 document.addEventListener("click",async e=>{
   const cp=e.target.closest("[data-copiar]");
   if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.copiar); toast("Link copiado"); }catch{ toast(cp.dataset.copiar); } return; }
+  const lt=e.target.closest("[data-lattirar]");
+  if(lt){ lerPubForm(); S.latForm[+lt.dataset.lattirar].imagem=""; render(); return; }
   const tp=e.target.closest("[data-pubtirar]");
   if(tp){ lerPubForm(); S.pubForm[+tp.dataset.pubtirar][tp.dataset.campo||"imagem"]=""; render(); return; }
   const t=e.target.closest("[data-editar],[data-pedir],[data-excluir],[data-destaque],[data-acao],[data-fmt],[data-tag]"); if(!t) return;
@@ -709,6 +715,12 @@ document.addEventListener("click",async e=>{
   }
 });
 document.addEventListener("change",async e=>{
+  if(e.target.dataset && e.target.dataset.latimg!==undefined && e.target.files[0]){
+    const i=+e.target.dataset.latimg; lerPubForm();
+    try{ S.latForm[i].imagem = await comprimir(e.target.files[0], 600, 110000); render(); toast("Imagem carregada"); }
+    catch{ toast("Não foi possível ler essa imagem. Tente um JPG ou PNG."); }
+    return;
+  }
   if(e.target.dataset && e.target.dataset.pubimg!==undefined && e.target.files[0]){
     const i=+e.target.dataset.pubimg; lerPubForm();
     const campo=e.target.dataset.campo||"imagem";
@@ -747,20 +759,38 @@ function blocoPub(){
     ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" data-pub="${i}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
   </div></div>`;
 }
+const LAT_VAZIA = () => [0,1,2].map(()=>({imagem:"",link:"",alt:"",ativo:true}));
+function latItens(todos){
+  const l = (S.pub && Array.isArray(S.pub.lateral)) ? S.pub.lateral : [];
+  if(todos){ const b=LAT_VAZIA(); l.slice(0,3).forEach((x,i)=>b[i]={...b[i],...x}); return b; }
+  return l.filter(x=>x && x.imagem && x.ativo!==false).slice(0,3);
+}
+function blocoPubLat(){
+  const l = latItens(false);
+  if(!l.length){
+    return S.editor ? `<div class="pub pub-lat"><div class="pub-rot">Publicidade</div><a href="/#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário lateral</b><span>Só a Redação vê este aviso. Tamanho: 300 × 250.</span></a></div>` : "";
+  }
+  return `<div class="pub pub-lat" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa">
+    ${l.map((x,i)=>{ const img=`<img src="${esc(x.imagem)}" alt="${esc(x.alt||"Publicidade")}">`;
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+    ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
+  </div></div>`;
+}
 function iniciarCarrossel(){
-  clearInterval(iniciarCarrossel._t);
-  const cx=document.getElementById("pub-caixa"); if(!cx) return;
-  const slides=[...cx.querySelectorAll(".pub-slide")], pts=[...cx.querySelectorAll(".pub-pontos button")];
-  if(slides.length<2) return;
-  let i=0;
-  const ir=n=>{ i=(n+slides.length)%slides.length; slides.forEach((s,k)=>s.classList.toggle("on",k===i)); pts.forEach((b,k)=>b.classList.toggle("on",k===i)); };
-  const tocar=()=>{ clearInterval(iniciarCarrossel._t); iniciarCarrossel._t=setInterval(()=>ir(i+1),5000); };
-  pts.forEach((b,k)=>b.onclick=()=>{ ir(k); tocar(); });
-  tocar();
+  (iniciarCarrossel._ts||[]).forEach(clearInterval); iniciarCarrossel._ts=[];
+  document.querySelectorAll(".pub-caixa").forEach(cx=>{
+    const slides=[...cx.querySelectorAll(".pub-slide")], pts=[...cx.querySelectorAll(".pub-pontos button")];
+    if(slides.length<2) return;
+    let i=0, t=null;
+    const ir=n=>{ i=(n+slides.length)%slides.length; slides.forEach((s,k)=>s.classList.toggle("on",k===i)); pts.forEach((b,k)=>b.classList.toggle("on",k===i)); };
+    const tocar=()=>{ clearInterval(t); t=setInterval(()=>ir(i+1),5000); iniciarCarrossel._ts.push(t); };
+    pts.forEach((b,k)=>b.onclick=()=>{ ir(k); tocar(); });
+    tocar();
+  });
 }
 function telaRedacaoPub(){
   const l=S.pubForm;
-  return abas("pub") + `<p style="color:var(--ink-2);margin:0 0 18px;max-width:75ch">Cadastre até <b>3 anúncios</b>. Eles aparecem na capa, logo abaixo da faixa de Últimas, e trocam sozinhos a cada 5 segundos. Cada anúncio tem duas versões:<br>• <b>Computador:</b> 1200 × 300 pixels (formato 4:1)<br>• <b>Celular:</b> 800 × 400 pixels (formato 2:1), com letras maiores. Se não enviar, o celular usa a imagem do computador.</p>
+  return abas("pub") + `<h2 class="pub-secao" style="margin-top:0">Banner do topo</h2><p style="color:var(--ink-2);margin:0 0 18px;max-width:75ch">Cadastre até <b>3 anúncios</b>. Eles aparecem na capa, logo abaixo da faixa de Últimas, e trocam sozinhos a cada 5 segundos. Cada anúncio tem duas versões:<br>• <b>Computador:</b> 1200 × 300 pixels (formato 4:1)<br>• <b>Celular:</b> 800 × 400 pixels (formato 2:1), com letras maiores. Se não enviar, o celular usa a imagem do computador.</p>
   <div class="pub-edit">${l.map((x,i)=>`<div class="painel">
     <div class="campo"><label>Anúncio ${i+1}</label>
       <span class="pub-sub">Imagem para computador · 1200 × 300</span>
@@ -777,10 +807,26 @@ function telaRedacaoPub(){
     <div class="campo"><label for="p-alt-${i}">Nome do anunciante</label><input id="p-alt-${i}" data-pubalt="${i}" value="${esc(x.alt)}" placeholder="Ex.: Empresa X"></div>
     <label class="check"><input type="checkbox" data-pubativo="${i}" ${x.ativo!==false?"checked":""}> Exibir no site</label>
   </div>`).join("")}</div>
+  <h2 class="pub-secao">Lateral</h2>
+  <p style="color:var(--ink-2);margin:0 0 18px;max-width:75ch">Fica na coluna da direita, logo abaixo da lista de Últimas (na capa e nas editorias). Até <b>3 anúncios</b>, trocando a cada 5 segundos. Tamanho ideal: <b>300 × 250 pixels</b> (ou 600 × 500 para mais nitidez). A mesma imagem serve para computador e celular.</p>
+  <div class="pub-edit">${S.latForm.map((x,i)=>`<div class="painel">
+    <div class="campo"><label>Anúncio lateral ${i+1}</label>
+      <div class="img-prev lat">${x.imagem?`<img src="${esc(x.imagem)}" alt="">`:`<small style="color:var(--muted)">Nenhuma imagem.</small>`}
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn pequeno" for="l-img-${i}" style="cursor:pointer">${x.imagem?"Trocar imagem":"Enviar imagem"}</label>${x.imagem?`<button type="button" class="btn pequeno perigo" data-lattirar="${i}">Remover</button>`:""}</div>
+        <input type="file" id="l-img-${i}" data-latimg="${i}" accept="image/*" hidden>
+      </div></div>
+    <div class="campo"><label for="l-link-${i}">Link ao clicar (opcional)</label><input id="l-link-${i}" data-latlink="${i}" value="${esc(x.link)}" placeholder="https://site-do-anunciante.com.br"></div>
+    <div class="campo"><label for="l-alt-${i}">Nome do anunciante</label><input id="l-alt-${i}" data-latalt="${i}" value="${esc(x.alt)}" placeholder="Ex.: Empresa X"></div>
+    <label class="check"><input type="checkbox" data-latativo="${i}" ${x.ativo!==false?"checked":""}> Exibir no site</label>
+  </div>`).join("")}</div>
   <div id="p-erro" hidden style="color:var(--danger);font-size:13px;font-weight:600;margin-top:14px"></div>
   <div style="margin-top:18px;display:flex;gap:8px"><button class="btn pri" data-acao="salvar-pub">Salvar publicidade</button><a class="btn" href="/#">Ver na capa</a></div>`;
 }
 function lerPubForm(){
+  (S.latForm||[]).forEach((x,i)=>{
+    const l=document.querySelector(`[data-latlink="${i}"]`), a=document.querySelector(`[data-latalt="${i}"]`), c=document.querySelector(`[data-latativo="${i}"]`);
+    if(l) x.link=l.value.trim(); if(a) x.alt=a.value.trim(); if(c) x.ativo=c.checked;
+  });
   S.pubForm.forEach((x,i)=>{
     const l=document.querySelector(`[data-publink="${i}"]`), a=document.querySelector(`[data-pubalt="${i}"]`), c=document.querySelector(`[data-pubativo="${i}"]`);
     if(l) x.link=l.value.trim(); if(a) x.alt=a.value.trim(); if(c) x.ativo=c.checked;
@@ -789,8 +835,9 @@ function lerPubForm(){
 async function salvarPub(){
   lerPubForm();
   const erro=$("#p-erro");
-  for(const x of S.pubForm){ if(x.link && !/^https?:\/\//i.test(x.link)) x.link="https://"+x.link; }
-  const dados={itens:S.pubForm.filter(x=>x.imagem||x.imagemMobile).map(x=>({imagem:x.imagem,imagemMobile:x.imagemMobile||"",link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
+  for(const x of [...S.pubForm,...S.latForm]){ if(x.link && !/^https?:\/\//i.test(x.link)) x.link="https://"+x.link; }
+  const dados={itens:S.pubForm.filter(x=>x.imagem||x.imagemMobile).map(x=>({imagem:x.imagem,imagemMobile:x.imagemMobile||"",link:x.link,alt:x.alt,ativo:x.ativo!==false})),
+    lateral:S.latForm.filter(x=>x.imagem).map(x=>({imagem:x.imagem,link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
   try{ await API.salvarPub(dados); S.pub=dados; erro.hidden=true; toast("Publicidade salva"); }
   catch(e){ erro.textContent="Não foi possível salvar a publicidade. Tente imagens menores. (Detalhe técnico: "+String(e?.message||e)+")"; erro.hidden=false; }
 }
