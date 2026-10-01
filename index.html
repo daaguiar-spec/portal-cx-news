@@ -90,6 +90,10 @@ main{padding-block:26px 60px}
 .pub{margin-bottom:22px}
 .pub-lat{margin:26px 0 0}
 .pub-lat .pub-caixa{aspect-ratio:6/5}
+.hero .ultimas{grid-column:3;grid-row:1 / span 2}
+.pub-meio{margin:0;grid-column:1 / 3;grid-row:2;align-self:start}
+.pub-meio .pub-caixa{aspect-ratio:970/250}
+.pub-edit .img-prev.faixa img{aspect-ratio:970/250;object-fit:cover}
 .pub-edit .img-prev.lat img{aspect-ratio:6/5;max-width:220px}
 .pub-secao{font-family:var(--f-display);font-size:24px;margin:34px 0 6px}
 .pub-rot{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
@@ -253,6 +257,8 @@ footer nav a:hover{color:var(--accent)}
 @media (max-width:1000px){
   .hero{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
   .ultimas{grid-column:1/-1;border-left:0;padding-left:0}
+  .hero .ultimas{grid-column:1/-1;grid-row:auto}
+  .pub-meio{grid-column:1/-1;grid-row:auto}
   .grade4{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sec-layout,.form-grid{grid-template-columns:minmax(0,1fr)}
 }
@@ -311,7 +317,7 @@ const EDITORIAS = {
 };
 const S = {
   artigos:[], rascunhos:[], config:{nome:"CX em Foco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
-  carregado:false, editor:false, demo:false, pub:null, pubForm:null, latForm:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
+  carregado:false, editor:false, demo:false, pub:null, pubForm:null, latForm:null, meioForm:null, pubMeio:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
 };
 
 /* ---------- utilidades ---------- */
@@ -394,6 +400,7 @@ function telaHome(){
     <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
     <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}${(()=>{ const mais=todos.filter(a=>a.id!==manchete.id && !secund.includes(a)).slice(0,6); return mais.length?`<div class="mais"><div class="mais-tit">Mais notícias</div><ul>${mais.map(a=>`<li data-ed="${esc(a.editoria)}"><a href="${link(a)}"><span class="kicker" data-ed="${esc(a.editoria)}">${esc(EDITORIAS[a.editoria]?.nome||"")}</span><span class="mais-t">${esc(a.titulo)}</span></a></li>`).join("")}</ul></div>`:""; })()}</div>
     <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
+    ${blocoPubMeio()}
   </section>`;
   for(const [k,e] of Object.entries(EDITORIAS)){
     const l = todos.filter(a=>a.editoria===k && a.id!==manchete.id).slice(0,4);
@@ -575,7 +582,7 @@ function render(scrollTop){
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
   else if(r==="redacao-config") h=telaRedacaoConfig();
-  else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); if(!S.latForm) S.latForm=JSON.parse(JSON.stringify(latItens(true))); h=telaRedacaoPub(); }
+  else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); if(!S.latForm) S.latForm=JSON.parse(JSON.stringify(latItens(true))); if(!S.meioForm) S.meioForm=JSON.parse(JSON.stringify(meioItens(true))); h=telaRedacaoPub(); }
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
@@ -663,7 +670,7 @@ function aoMudarRota(){
   const r=rota();
   if(r==="redacao-nova"){ abrirForm(null); }
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
-  if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; }
+  if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; S.meioForm=null; }
   S.confirmar=null; render(true);
 }
 window.addEventListener("hashchange",aoMudarRota);
@@ -689,6 +696,8 @@ document.addEventListener("submit",e=>{
 document.addEventListener("click",async e=>{
   const cp=e.target.closest("[data-copiar]");
   if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.copiar); toast("Link copiado"); }catch{ toast(cp.dataset.copiar); } return; }
+  const mt=e.target.closest("[data-meiotirar]");
+  if(mt){ lerPubForm(); S.meioForm[+mt.dataset.meiotirar].imagem=""; render(); return; }
   const lt=e.target.closest("[data-lattirar]");
   if(lt){ lerPubForm(); S.latForm[+lt.dataset.lattirar].imagem=""; render(); return; }
   const tp=e.target.closest("[data-pubtirar]");
@@ -728,6 +737,12 @@ document.addEventListener("click",async e=>{
   }
 });
 document.addEventListener("change",async e=>{
+  if(e.target.dataset && e.target.dataset.meioimg!==undefined && e.target.files[0]){
+    const i=+e.target.dataset.meioimg; lerPubForm();
+    try{ S.meioForm[i].imagem = await comprimir(e.target.files[0], 1400, 160000); render(); toast("Imagem carregada"); }
+    catch{ toast("Não foi possível ler essa imagem. Tente um JPG ou PNG."); }
+    return;
+  }
   if(e.target.dataset && e.target.dataset.latimg!==undefined && e.target.files[0]){
     const i=+e.target.dataset.latimg; lerPubForm();
     try{ S.latForm[i].imagem = await comprimir(e.target.files[0], 600, 110000); render(); toast("Imagem carregada"); }
@@ -792,12 +807,31 @@ function blocoPubLat(){
 function ajustarMais(){
   const col=document.querySelector(".col-sec"), esq=document.querySelector(".col-esq"), lis=[...document.querySelectorAll(".mais li")];
   if(!col||!esq||!lis.length) return;
-  lis.forEach(l=>l.hidden=false);
+  lis.forEach(l=>l.hidden=false); const mx=document.querySelector(".mais"); if(mx) mx.hidden=false;
   if(window.innerWidth<=1000) { lis.slice(4).forEach(l=>l.hidden=true); return; }
   const fimEsq=()=>esq.lastElementChild.getBoundingClientRect().bottom, fimCol=()=>col.lastElementChild.getBoundingClientRect().bottom;
-  for(let i=lis.length-1;i>=1 && fimCol() > fimEsq()+10;i--) lis[i].hidden=true;
+  const mais=document.querySelector(".mais"); if(mais) mais.hidden=false;
+  const minimo = 1;
+  for(let i=lis.length-1;i>=minimo && fimCol() > fimEsq()+30;i--) lis[i].hidden=true;
+  if(mais && lis.every(l=>l.hidden)) mais.hidden=true;
 }
 window.addEventListener("resize",()=>{ clearTimeout(ajustarMais._t); ajustarMais._t=setTimeout(ajustarMais,150); });
+function meioItens(todos){
+  const l = (S.pubMeio && Array.isArray(S.pubMeio.itens)) ? S.pubMeio.itens : [];
+  if(todos){ const b=LAT_VAZIA(); l.slice(0,3).forEach((x,i)=>b[i]={...b[i],...x}); return b; }
+  return l.filter(x=>x && x.imagem && x.ativo!==false).slice(0,3);
+}
+function blocoPubMeio(){
+  const l = meioItens(false);
+  if(!l.length){
+    return S.editor ? `<div class="pub pub-meio"><div class="pub-rot">Publicidade</div><a href="/#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário (faixa abaixo da manchete)</b><span>Só a Redação vê este aviso. Tamanho: 970 × 250.</span></a></div>` : "";
+  }
+  return `<div class="pub pub-meio" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa">
+    ${l.map((x,i)=>{ const img=`<img src="${esc(x.imagem)}" alt="${esc(x.alt||"Publicidade")}">`;
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+    ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
+  </div></div>`;
+}
 function iniciarCarrossel(){
   (iniciarCarrossel._ts||[]).forEach(clearInterval); iniciarCarrossel._ts=[];
   document.querySelectorAll(".pub-caixa").forEach(cx=>{
@@ -841,10 +875,26 @@ function telaRedacaoPub(){
     <div class="campo"><label for="l-alt-${i}">Nome do anunciante</label><input id="l-alt-${i}" data-latalt="${i}" value="${esc(x.alt)}" placeholder="Ex.: Empresa X"></div>
     <label class="check"><input type="checkbox" data-latativo="${i}" ${x.ativo!==false?"checked":""}> Exibir no site</label>
   </div>`).join("")}</div>
+  <h2 class="pub-secao">Faixa abaixo da manchete</h2>
+  <p style="color:var(--ink-2);margin:0 0 18px;max-width:75ch">Banner horizontal largo na capa, logo abaixo da manchete e das chamadas, ao lado da publicidade lateral. Até <b>3 anúncios</b>, trocando a cada 5 segundos. Tamanho ideal: <b>970 × 250 pixels</b> (ou 1940 × 500 para mais nitidez).</p>
+  <div class="pub-edit">${S.meioForm.map((x,i)=>`<div class="painel">
+    <div class="campo"><label>Anúncio da faixa ${i+1}</label>
+      <div class="img-prev faixa">${x.imagem?`<img src="${esc(x.imagem)}" alt="">`:`<small style="color:var(--muted)">Nenhuma imagem.</small>`}
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn pequeno" for="m-img-${i}" style="cursor:pointer">${x.imagem?"Trocar imagem":"Enviar imagem"}</label>${x.imagem?`<button type="button" class="btn pequeno perigo" data-meiotirar="${i}">Remover</button>`:""}</div>
+        <input type="file" id="m-img-${i}" data-meioimg="${i}" accept="image/*" hidden>
+      </div></div>
+    <div class="campo"><label for="m-link-${i}">Link ao clicar (opcional)</label><input id="m-link-${i}" data-meiolink="${i}" value="${esc(x.link)}" placeholder="https://site-do-anunciante.com.br"></div>
+    <div class="campo"><label for="m-alt-${i}">Nome do anunciante</label><input id="m-alt-${i}" data-meioalt="${i}" value="${esc(x.alt)}" placeholder="Ex.: Empresa X"></div>
+    <label class="check"><input type="checkbox" data-meioativo="${i}" ${x.ativo!==false?"checked":""}> Exibir no site</label>
+  </div>`).join("")}</div>
   <div id="p-erro" hidden style="color:var(--danger);font-size:13px;font-weight:600;margin-top:14px"></div>
   <div style="margin-top:18px;display:flex;gap:8px"><button class="btn pri" data-acao="salvar-pub">Salvar publicidade</button><a class="btn" href="/#">Ver na capa</a></div>`;
 }
 function lerPubForm(){
+  (S.meioForm||[]).forEach((x,i)=>{
+    const l=document.querySelector(`[data-meiolink="${i}"]`), a=document.querySelector(`[data-meioalt="${i}"]`), c=document.querySelector(`[data-meioativo="${i}"]`);
+    if(l) x.link=l.value.trim(); if(a) x.alt=a.value.trim(); if(c) x.ativo=c.checked;
+  });
   (S.latForm||[]).forEach((x,i)=>{
     const l=document.querySelector(`[data-latlink="${i}"]`), a=document.querySelector(`[data-latalt="${i}"]`), c=document.querySelector(`[data-latativo="${i}"]`);
     if(l) x.link=l.value.trim(); if(a) x.alt=a.value.trim(); if(c) x.ativo=c.checked;
@@ -857,10 +907,11 @@ function lerPubForm(){
 async function salvarPub(){
   lerPubForm();
   const erro=$("#p-erro");
-  for(const x of [...S.pubForm,...S.latForm]){ if(x.link && !/^https?:\/\//i.test(x.link)) x.link="https://"+x.link; }
+  for(const x of [...S.pubForm,...S.latForm,...S.meioForm]){ if(x.link && !/^https?:\/\//i.test(x.link)) x.link="https://"+x.link; }
   const dados={itens:S.pubForm.filter(x=>x.imagem||x.imagemMobile).map(x=>({imagem:x.imagem,imagemMobile:x.imagemMobile||"",link:x.link,alt:x.alt,ativo:x.ativo!==false})),
     lateral:S.latForm.filter(x=>x.imagem).map(x=>({imagem:x.imagem,link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
-  try{ await API.salvarPub(dados); S.pub=dados; erro.hidden=true; toast("Publicidade salva"); }
+  const meio={itens:S.meioForm.filter(x=>x.imagem).map(x=>({imagem:x.imagem,link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
+  try{ await API.salvarPub(dados); await API.salvarPubMeio(meio); S.pub=dados; S.pubMeio=meio; erro.hidden=true; toast("Publicidade salva"); }
   catch(e){ erro.textContent="Não foi possível salvar a publicidade. Tente imagens menores. (Detalhe técnico: "+String(e?.message||e)+")"; erro.hidden=false; }
 }
 
@@ -1068,13 +1119,13 @@ const API = usarSupabase ? {
   async carregar(){
     const [m,c] = await Promise.all([
       sb.from("materias").select("id,status,publicado_em,dados").order("publicado_em",{ascending:false}).limit(1000),
-      sb.from("config").select("id,dados").in("id",["site","publicidade"])
+      sb.from("config").select("id,dados").in("id",["site","publicidade","publicidade-meio"])
     ]);
     if(m.error) throw m.error;
     const l = (m.data||[]).map(r=>({...r.dados, id:r.id, publicadoEm:r.publicado_em, _status:r.status}));
     S.artigos = l.filter(a=>a._status==="publicado");
     S.rascunhos = S.editor ? l.filter(a=>a._status==="rascunho") : [];
-    for(const r of (c.data||[])){ if(r.id==="site") S.config={...S.config,...r.dados}; if(r.id==="publicidade") S.pub=r.dados; }
+    for(const r of (c.data||[])){ if(r.id==="site") S.config={...S.config,...r.dados}; if(r.id==="publicidade") S.pub=r.dados; if(r.id==="publicidade-meio") S.pubMeio=r.dados; }
   },
   async salvar(id,status,dados){
     const {error} = await sb.from("materias").upsert({id, status, publicado_em:dados.publicadoEm, dados, atualizado_em:new Date().toISOString()});
@@ -1083,6 +1134,7 @@ const API = usarSupabase ? {
   async excluir(id){ const {error} = await sb.from("materias").delete().eq("id",id); if(error) throw error; },
   async salvarConfig(c){ const {error} = await sb.from("config").upsert({id:"site", dados:c}); if(error) throw error; },
   async salvarPub(p){ const {error} = await sb.from("config").upsert({id:"publicidade", dados:p}); if(error) throw error; },
+  async salvarPubMeio(p){ const {error} = await sb.from("config").upsert({id:"publicidade-meio", dados:p}); if(error) throw error; },
   async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email:email.toLowerCase(), password:senha}); if(error) throw error; },
   async sair(){ await sb.auth.signOut(); }
 } : {
@@ -1090,11 +1142,12 @@ const API = usarSupabase ? {
   async iniciar(){ S.editor=false; S.demo=true; },
   ler(){ try{ const j=JSON.parse(localStorage.getItem(this.CHAVE)||"null"); if(j) return j; }catch{} return {materias:EXEMPLOS.map(a=>({...a,_status:"publicado"})), config:null}; },
   gravar(d){ try{ localStorage.setItem(this.CHAVE, JSON.stringify(d)); }catch{ throw new Error("armazenamento"); } },
-  async carregar(){ const d=this.ler(); S.artigos=d.materias.filter(a=>a._status==="publicado"); S.rascunhos=d.materias.filter(a=>a._status==="rascunho"); if(d.config) S.config={...S.config,...d.config}; if(d.publicidade) S.pub=d.publicidade; },
+  async carregar(){ const d=this.ler(); S.artigos=d.materias.filter(a=>a._status==="publicado"); S.rascunhos=d.materias.filter(a=>a._status==="rascunho"); if(d.config) S.config={...S.config,...d.config}; if(d.publicidade) S.pub=d.publicidade; if(d.publicidadeMeio) S.pubMeio=d.publicidadeMeio; },
   async salvar(id,status,dados){ const d=this.ler(); d.materias=d.materias.filter(a=>a.id!==id); d.materias.push({...dados,id,_status:status}); this.gravar(d); },
   async excluir(id){ const d=this.ler(); d.materias=d.materias.filter(a=>a.id!==id); this.gravar(d); },
   async salvarConfig(c){ const d=this.ler(); d.config=c; this.gravar(d); },
   async salvarPub(p){ const d=this.ler(); d.publicidade=p; this.gravar(d); },
+  async salvarPubMeio(p){ const d=this.ler(); d.publicidadeMeio=p; this.gravar(d); },
   async entrar(){ throw new Error("sem-banco"); }, async sair(){}
 };
 async function recarregar(){
