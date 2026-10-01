@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "portal-cx-news.vercel.app" }],
+      "destination": "https://www.cxinfoco.com.br/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/materia/:slug", "destination": "/api/pagina?slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/robots.txt", "destination": "/api/robots" }
+  ]
+}
