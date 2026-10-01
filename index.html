@@ -386,7 +386,7 @@ function telaHome(){
     <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
   </section>`;
   for(const [k,e] of Object.entries(EDITORIAS)){
-    const l = noticias.filter(a=>a.editoria===k && !usados.has(a.id)).slice(0,4);
+    const l = todos.filter(a=>a.editoria===k && a.id!==manchete.id).slice(0,4);
     if(!l.length) continue;
     h += `<section class="secao">${bloco(e.nome,"#"+k,k)}<div class="grade4">${l.map(a=>card(a)).join("")}</div></section>`;
   }
