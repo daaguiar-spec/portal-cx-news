@@ -112,6 +112,16 @@ main{padding-block:26px 60px}
 .manchete h1{font-size:clamp(28px,3.6vw,42px);line-height:1.08;margin:12px 0 10px}
 .manchete p.fina{font-family:var(--f-display);font-size:18.5px;color:var(--ink-2);margin:0 0 10px;line-height:1.4}
 .manchete a:hover h1,.card a:hover h3,.sec-item a:hover h3{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.mais{border-top:3px solid var(--ink);padding-top:10px}
+.mais-tit{font-family:var(--f-ui);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.mais ul{list-style:none;margin:0;padding:0}
+.mais li{padding:12px 0 12px 14px;border-bottom:1px solid var(--line);position:relative}
+.mais li::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:2px;background:var(--ed,var(--accent))}
+.mais li:last-child{border-bottom:0}
+.mais a{display:flex;flex-direction:column;gap:3px}
+.mais .kicker{font-size:10.5px}
+.mais-t{font-family:var(--f-display);font-weight:600;font-size:17px;line-height:1.25}
+.mais a:hover .mais-t{text-decoration:underline;text-underline-offset:3px}
 .col-sec{display:flex;flex-direction:column;gap:22px}
 .card h3{font-size:20px;line-height:1.18;margin:8px 0 6px}
 .card .capa{margin-bottom:10px}
@@ -382,7 +392,7 @@ function telaHome(){
   const usados = new Set([manchete, ...secund].map(a=>a.id));
   let h = `<section class="hero">
     <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
-    <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}</div>
+    <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}${(()=>{ const mais=todos.filter(a=>a.id!==manchete.id && !secund.includes(a)).slice(0,6); return mais.length?`<div class="mais"><div class="mais-tit">Mais notícias</div><ul>${mais.map(a=>`<li data-ed="${esc(a.editoria)}"><a href="${link(a)}"><span class="kicker" data-ed="${esc(a.editoria)}">${esc(EDITORIAS[a.editoria]?.nome||"")}</span><span class="mais-t">${esc(a.titulo)}</span></a></li>`).join("")}</ul></div>`:""; })()}</div>
     <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
   </section>`;
   for(const [k,e] of Object.entries(EDITORIAS)){
@@ -571,6 +581,7 @@ function render(scrollTop){
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
   if(r.startsWith("m-")){ const am=[...S.artigos,...S.rascunhos].find(x=>x.id===r.slice(2)); if(am) document.title = am.titulo+" | "+(S.config.nome||"CX em Foco"); }
   iniciarCarrossel();
+  ajustarMais();
   if(scrollTop) window.scrollTo(0,0);
 }
 function formAberto(){ const r=rota(); return r==="redacao-nova"||r==="redacao-editar"||r==="redacao-config"||r==="redacao-pub"; }
@@ -778,6 +789,15 @@ function blocoPubLat(){
     ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
   </div></div>`;
 }
+function ajustarMais(){
+  const col=document.querySelector(".col-sec"), esq=document.querySelector(".col-esq"), lis=[...document.querySelectorAll(".mais li")];
+  if(!col||!esq||!lis.length) return;
+  lis.forEach(l=>l.hidden=false);
+  if(window.innerWidth<=1000) { lis.slice(4).forEach(l=>l.hidden=true); return; }
+  const fimEsq=()=>esq.lastElementChild.getBoundingClientRect().bottom, fimCol=()=>col.lastElementChild.getBoundingClientRect().bottom;
+  for(let i=lis.length-1;i>=1 && fimCol() > fimEsq()+10;i--) lis[i].hidden=true;
+}
+window.addEventListener("resize",()=>{ clearTimeout(ajustarMais._t); ajustarMais._t=setTimeout(ajustarMais,150); });
 function iniciarCarrossel(){
   (iniciarCarrossel._ts||[]).forEach(clearInterval); iniciarCarrossel._ts=[];
   document.querySelectorAll(".pub-caixa").forEach(cx=>{
