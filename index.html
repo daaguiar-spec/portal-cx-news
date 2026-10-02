@@ -183,6 +183,39 @@ main{padding-block:26px 60px}
 .corpo a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 .corpo > p:first-child::first-letter{font-size:3.3em;float:left;line-height:.85;margin:.06em .08em 0 0;font-weight:700;color:var(--ed,var(--accent))}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.st-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.st-filtro{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--surface)}
+.st-filtro button{border:0;background:none;padding:7px 14px;font-weight:700;font-size:13px;color:var(--ink-2)}
+.st-filtro button.on{background:var(--accent);color:var(--on-accent)}
+.st-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.st-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:2px}
+.st-kpi span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.st-kpi b{font-family:var(--f-display);font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.st-kpi small{font-size:12.5px;color:var(--ink-2)}
+.st-bloco{margin-bottom:16px;gap:10px}
+.st-bloco h3{font-family:var(--f-ui);font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.st-duas{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.st-graf{position:relative}
+.st-graf svg{width:100%;height:auto;display:block}
+.st-grade{stroke:var(--line);stroke-width:1}
+.st-base{stroke:var(--muted);stroke-width:1}
+.st-eixo{fill:var(--muted);font-size:11px;font-family:var(--f-ui)}
+.st-barra{fill:var(--accent)}
+.st-col.on .st-barra{fill:var(--ink)}
+.st-dica{position:absolute;top:-6px;background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:600;padding:5px 9px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.st-rank{margin:0;padding-left:22px;display:flex;flex-direction:column}
+.st-rank li{padding:9px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.st-rank li a{font-family:var(--f-display);font-weight:600;font-size:15.5px}
+.st-rank li{display:list-item}
+.st-rank li b{float:right;margin-left:12px;font-size:14px}
+.st-barras{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.st-bl{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-variant-numeric:tabular-nums}
+.st-bl small{color:var(--muted);font-weight:500}
+.st-trilho{height:8px;background:var(--soft);border-radius:4px;margin-top:4px;overflow:hidden}
+.st-trilho i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.st-tab{min-width:560px}
+.st-tab .n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:900px){ .st-kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .st-duas{grid-template-columns:minmax(0,1fr)} }
 .compart{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:30px 0 0;padding-top:18px;border-top:1px solid var(--line)}
 .compart span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
 .compart a,.compart button{font-size:13px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:99px}
@@ -317,7 +350,7 @@ const EDITORIAS = {
 };
 const S = {
   artigos:[], rascunhos:[], config:{nome:"CX em Foco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
-  carregado:false, editor:false, demo:false, pub:null, pubForm:null, latForm:null, meioForm:null, pubMeio:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
+  carregado:false, stats:undefined, statsDias:30, statsCarregando:false, statsErro:"", editor:false, demo:false, pub:null, pubForm:null, latForm:null, meioForm:null, pubMeio:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
 };
 
 /* ---------- utilidades ---------- */
@@ -441,9 +474,9 @@ function artigoHTML(a){
     ${capa(a)}${a.legenda?`<p class="legenda">${esc(a.legenda)}</p>`:`<div style="height:26px"></div>`}
     <div class="corpo">${corpoHTML(a.corpo)}</div>
     ${a.id?`<div class="compart"><span>Compartilhe</span>
-      <a href="https://wa.me/?text=${encodeURIComponent(a.titulo+" "+location.origin+"/materia/"+a.id)}" target="_blank" rel="noopener">WhatsApp</a>
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(location.origin+"/materia/"+a.id)}" target="_blank" rel="noopener">LinkedIn</a>
-      <button type="button" data-copiar="${esc(location.origin+"/materia/"+a.id)}">Copiar link</button></div>`:""}
+      <a href="https://wa.me/?text=${encodeURIComponent(a.titulo+" "+location.origin+"/materia/"+a.id+"?utm_source=whatsapp")}" target="_blank" rel="noopener" data-rede="WhatsApp">WhatsApp</a>
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(location.origin+"/materia/"+a.id+"?utm_source=linkedin")}" target="_blank" rel="noopener" data-rede="LinkedIn">LinkedIn</a>
+      <button type="button" data-rede="Link copiado" data-copiar="${esc(location.origin+"/materia/"+a.id+"?utm_source=link")}">Copiar link</button></div>`:""}
     ${(a.tags||[]).length?`<div class="tags">${a.tags.map(t=>`<a href="/#busca" data-tag="${esc(t)}">${esc(t)}</a>`).join("")}</div>`:""}
   </article>`;
 }
@@ -462,7 +495,7 @@ function telaMateria(id){
 /* ---------- redação ---------- */
 function abas(on){
   return `<div class="redacao-top"><div><span class="kicker">Área restrita</span><h1>Redação</h1></div><a class="btn pri" href="/#redacao-nova">+ Nova matéria</a></div>
-  <nav class="abas"><a href="/#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="/#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="/#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="/#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
+  <nav class="abas"><a href="/#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="/#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="/#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="/#redacao-stats" class="${on==="stats"?"on":""}">Estatísticas</a><a href="/#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
 }
 function telaRedacaoLista(){
   const linhas = [...S.rascunhos.map(a=>({...a,_st:"ras"})), ...ordenar(S.artigos).map(a=>({...a,_st:"pub"}))];
@@ -582,6 +615,7 @@ function render(scrollTop){
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
   else if(r==="redacao-config") h=telaRedacaoConfig();
+  else if(r==="redacao-stats") h=telaRedacaoStats();
   else if(r==="redacao-pub"){ if(!S.pubForm) S.pubForm=JSON.parse(JSON.stringify(pubItens(true))); if(!S.latForm) S.latForm=JSON.parse(JSON.stringify(latItens(true))); if(!S.meioForm) S.meioForm=JSON.parse(JSON.stringify(meioItens(true))); h=telaRedacaoPub(); }
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
@@ -672,8 +706,18 @@ function aoMudarRota(){
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
   if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; S.meioForm=null; }
   S.confirmar=null; render(true);
+  Rastreio.visita();
 }
 window.addEventListener("hashchange",aoMudarRota);
+document.addEventListener("mouseover",e=>{
+  const c=e.target.closest(".st-col"), g=e.target.closest(".st-graf");
+  if(!g){ document.querySelectorAll(".st-dica").forEach(t=>t.hidden=true); document.querySelectorAll(".st-col.on").forEach(x=>x.classList.remove("on")); return; }
+  const tip=g.querySelector(".st-dica"); g.querySelectorAll(".st-col.on").forEach(x=>x.classList.remove("on"));
+  if(!c){ tip.hidden=true; return; }
+  c.classList.add("on"); tip.textContent=c.dataset.dica; tip.hidden=false;
+  const gr=g.getBoundingClientRect(), cr=c.getBoundingClientRect();
+  tip.style.left=Math.min(gr.width-tip.offsetWidth, Math.max(0, cr.left-gr.left+cr.width/2-tip.offsetWidth/2))+"px";
+});
 window.addEventListener("popstate",aoMudarRota);
 document.addEventListener("click",e=>{
   const a=e.target.closest("a[href]"); if(!a || a.target==="_blank" || e.ctrlKey || e.metaKey || e.shiftKey || e.button>0) return;
@@ -685,6 +729,12 @@ document.addEventListener("click",e=>{
     history.pushState(null,"",h); aoMudarRota();
   }
 });
+document.addEventListener("click",e=>{
+  const ad=e.target.closest("a.pub-slide");
+  if(ad){ const cx=ad.closest(".pub-caixa"); Rastreio.evento({tipo:"clique_anuncio", espaco:cx?.dataset.espaco||"", alvo:ad.dataset.anuncio||""}); }
+  const sh=e.target.closest("[data-rede]");
+  if(sh){ const r=rota(); Rastreio.evento({tipo:"compartilhar", alvo:sh.dataset.rede, materia:r.startsWith("m-")?r.slice(2):null}); }
+},true);
 document.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="form-busca-top"){ S.busca=$("#busca-top").value; if(rota()==="busca") render(); else irPara("busca"); }
@@ -694,6 +744,8 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="form-login") entrar();
 });
 document.addEventListener("click",async e=>{
+  const dd=e.target.closest("[data-dias]");
+  if(dd){ S.statsDias=+dd.dataset.dias; S.stats=undefined; carregarStats(); return; }
   const cp=e.target.closest("[data-copiar]");
   if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.copiar); toast("Link copiado"); }catch{ toast(cp.dataset.copiar); } return; }
   const mt=e.target.closest("[data-meiotirar]");
@@ -780,10 +832,10 @@ function blocoPub(){
     return S.editor ? `<div class="pub"><div class="pub-rot">Publicidade</div><a href="/#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário</b><span>Só a Redação vê este aviso. Clique para cadastrar até 3 imagens.</span></a></div>` : "";
   }
   const temMob = l.some(x=>x.imagemMobile);
-  return `<div class="pub" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa ${temMob?"tem-mob":""}" id="pub-caixa">
+  return `<div class="pub" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa ${temMob?"tem-mob":""}" id="pub-caixa" data-espaco="Topo">
     ${l.map((x,i)=>{ const desk=x.imagem||x.imagemMobile, mob=x.imagemMobile||x.imagem;
       const img=`<picture><source media="(max-width:680px)" srcset="${esc(mob)}"><img src="${esc(desk)}" alt="${esc(x.alt||"Publicidade")}"></picture>`;
-      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}">${img}</div>`; }).join("")}
     ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" data-pub="${i}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
   </div></div>`;
 }
@@ -798,9 +850,9 @@ function blocoPubLat(){
   if(!l.length){
     return S.editor ? `<div class="pub pub-lat"><div class="pub-rot">Publicidade</div><a href="/#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário lateral</b><span>Só a Redação vê este aviso. Tamanho: 300 × 250.</span></a></div>` : "";
   }
-  return `<div class="pub pub-lat" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa">
+  return `<div class="pub pub-lat" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa" data-espaco="Lateral">
     ${l.map((x,i)=>{ const img=`<img src="${esc(x.imagem)}" alt="${esc(x.alt||"Publicidade")}">`;
-      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}">${img}</div>`; }).join("")}
     ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
   </div></div>`;
 }
@@ -826,19 +878,23 @@ function blocoPubMeio(){
   if(!l.length){
     return S.editor ? `<div class="pub pub-meio"><div class="pub-rot">Publicidade</div><a href="/#redacao-pub" class="pub-caixa pub-vazia"><b>Espaço publicitário (faixa abaixo da manchete)</b><span>Só a Redação vê este aviso. Tamanho: 970 × 250.</span></a></div>` : "";
   }
-  return `<div class="pub pub-meio" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa">
+  return `<div class="pub pub-meio" aria-label="Publicidade"><div class="pub-rot">Publicidade</div><div class="pub-caixa" data-espaco="Faixa">
     ${l.map((x,i)=>{ const img=`<img src="${esc(x.imagem)}" alt="${esc(x.alt||"Publicidade")}">`;
-      return x.link ? `<a class="pub-slide ${i===0?"on":""}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}">${img}</div>`; }).join("")}
+      return x.link ? `<a class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}" href="${esc(x.link)}" target="_blank" rel="noopener sponsored">${img}</a>` : `<div class="pub-slide ${i===0?"on":""}" data-anuncio="${esc(x.alt||("Anúncio "+(i+1)))}">${img}</div>`; }).join("")}
     ${l.length>1?`<div class="pub-pontos">${l.map((_,i)=>`<button type="button" class="${i===0?"on":""}" aria-label="Anúncio ${i+1}"></button>`).join("")}</div>`:""}
   </div></div>`;
 }
 function iniciarCarrossel(){
   (iniciarCarrossel._ts||[]).forEach(clearInterval); iniciarCarrossel._ts=[];
+  (iniciarCarrossel._obs||[]).forEach(o=>o.disconnect()); iniciarCarrossel._obs=[];
   document.querySelectorAll(".pub-caixa").forEach(cx=>{
     const slides=[...cx.querySelectorAll(".pub-slide")], pts=[...cx.querySelectorAll(".pub-pontos button")];
+    if(!slides.length) return;
+    let i=0, t=null, visivel=false; const vistos=new Set();
+    const exibir=()=>{ const sl=slides[i]; if(!visivel||!sl||vistos.has(i)) return; vistos.add(i); Rastreio.evento({tipo:"exibicao_anuncio", espaco:cx.dataset.espaco||"", alvo:sl.dataset.anuncio||""}); };
+    if("IntersectionObserver" in window){ const o=new IntersectionObserver(es=>{ visivel=es[0].isIntersecting; exibir(); },{threshold:.5}); o.observe(cx); iniciarCarrossel._obs.push(o); }
     if(slides.length<2) return;
-    let i=0, t=null;
-    const ir=n=>{ i=(n+slides.length)%slides.length; slides.forEach((s,k)=>s.classList.toggle("on",k===i)); pts.forEach((b,k)=>b.classList.toggle("on",k===i)); };
+    const ir=n=>{ i=(n+slides.length)%slides.length; slides.forEach((s,k)=>s.classList.toggle("on",k===i)); pts.forEach((b,k)=>b.classList.toggle("on",k===i)); exibir(); };
     const tocar=()=>{ clearInterval(t); t=setInterval(()=>ir(i+1),5000); iniciarCarrossel._ts.push(t); };
     pts.forEach((b,k)=>b.onclick=()=>{ ir(k); tocar(); });
     tocar();
@@ -913,6 +969,112 @@ async function salvarPub(){
   const meio={itens:S.meioForm.filter(x=>x.imagem).map(x=>({imagem:x.imagem,link:x.link,alt:x.alt,ativo:x.ativo!==false}))};
   try{ await API.salvarPub(dados); await API.salvarPubMeio(meio); S.pub=dados; S.pubMeio=meio; erro.hidden=true; toast("Publicidade salva"); }
   catch(e){ erro.textContent="Não foi possível salvar a publicidade. Tente imagens menores. (Detalhe técnico: "+String(e?.message||e)+")"; erro.hidden=false; }
+}
+
+/* ---------- estatísticas: registro anônimo ---------- */
+const Rastreio = {
+  ultima:"",
+  ativo(){ return usarSupabase && sb && !S.editor && !S.demo && !navigator.webdriver; },
+  visitante(){ try{ let v=localStorage.getItem("cxv"); if(!v){ v=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem("cxv",v); } return v; }catch{ return "anonimo"; } },
+  dispositivo(){ const w=window.innerWidth; return w<=680?"Celular":w<=1000?"Tablet":"Computador"; },
+  origem(){
+    let primeira=true; try{ if(sessionStorage.getItem("cxo")) primeira=false; else sessionStorage.setItem("cxo","1"); }catch{}
+    if(!primeira) return null;
+    const utm=new URLSearchParams(location.search).get("utm_source");
+    if(utm){ const u=utm.toLowerCase(); return u==="whatsapp"?"WhatsApp":u==="linkedin"?"LinkedIn":u==="link"?"Link compartilhado":u.slice(0,40); }
+    const ref=document.referrer; if(!ref) return "Acesso direto";
+    let h=""; try{ h=new URL(ref).hostname.replace(/^www\./,""); }catch{}
+    if(!h || h===location.hostname.replace(/^www\./,"")) return null;
+    if(/google\./.test(h)) return "Google"; if(/bing\./.test(h)) return "Bing";
+    if(/whatsapp|wa\.me/.test(h)) return "WhatsApp"; if(/linkedin|lnkd/.test(h)) return "LinkedIn";
+    if(/instagram/.test(h)) return "Instagram"; if(/facebook|fb\./.test(h)) return "Facebook";
+    if(/^t\.co$|twitter|x\.com/.test(h)) return "X (Twitter)";
+    return "Outros sites";
+  },
+  evento(dados){
+    if(!this.ativo()) return;
+    const linha={ visitante:this.visitante(), dispositivo:this.dispositivo(), pagina:(rota()||"capa").slice(0,200), ...dados };
+    try{ sb.from("eventos").insert(linha).then(()=>{},()=>{}); }catch{}
+  },
+  visita(){
+    const r=rota(); if(r.startsWith("redacao")) return;
+    const chave=r+"|"+location.pathname; if(chave===this.ultima) return; this.ultima=chave;
+    this.evento({ tipo:"visita", materia:r.startsWith("m-")?r.slice(2):null, origem:this.origem() });
+  }
+};
+
+/* ---------- estatísticas: painel ---------- */
+const fmt = n => Number(n||0).toLocaleString("pt-BR");
+const pct = (a,b) => b? (100*a/b).toLocaleString("pt-BR",{maximumFractionDigits:1})+"%" : "—";
+async function carregarStats(){
+  S.statsCarregando=true; S.statsErro=""; render();
+  try{ S.stats = await API.estatisticas(S.statsDias); }
+  catch(e){ S.statsErro = /function|estatisticas|404|PGRST/i.test(String(e?.message||e)) ? "O banco ainda não tem a função de estatísticas. Rode o código de estatísticas no SQL Editor do Supabase (veja o arquivo supabase-estatisticas.sql)." : "Não foi possível carregar as estatísticas. (Detalhe técnico: "+String(e?.message||e)+")"; }
+  S.statsCarregando=false; if(rota()==="redacao-stats") render();
+}
+function barrasH(lista, total){
+  if(!lista.length) return `<p class="meta">Ainda sem dados no período.</p>`;
+  const max=Math.max(...lista.map(x=>x.n));
+  return `<ul class="st-barras">${lista.map(x=>`<li><div class="st-bl"><span>${esc(x.rotulo)}</span><b>${fmt(x.n)}${total?` <small>${pct(x.n,total)}</small>`:""}</b></div><div class="st-trilho"><i style="width:${Math.max(2,100*x.n/max)}%"></i></div></li>`).join("")}</ul>`;
+}
+function graficoDias(serie){
+  const W=760,H=220,ml=40,mr=8,mt=12,mb=26, iw=W-ml-mr, ih=H-mt-mb;
+  const max=Math.max(4,...serie.map(d=>d.visitas)); const passo=Math.pow(10,Math.floor(Math.log10(max))); const top=Math.ceil(max/passo)*passo;
+  const bw=iw/serie.length, gap=Math.min(2,bw*.25);
+  const y=v=>mt+ih-(v/top)*ih;
+  const grades=[0,top/2,top].map(v=>`<line x1="${ml}" x2="${W-mr}" y1="${y(v)}" y2="${y(v)}" class="st-grade"/><text x="${ml-6}" y="${y(v)+4}" text-anchor="end" class="st-eixo">${fmt(v)}</text>`).join("");
+  const cada=Math.ceil(serie.length/8);
+  const barras=serie.map((d,i)=>{ const h=Math.max(d.visitas?2:0,(d.visitas/top)*ih), x=ml+i*bw+gap/2, w=Math.max(1,bw-gap);
+    const r=Math.min(4,w/2);
+    const path = h>0 ? `M${x},${mt+ih} V${mt+ih-h+r} Q${x},${mt+ih-h} ${x+r},${mt+ih-h} H${x+w-r} Q${x+w},${mt+ih-h} ${x+w},${mt+ih-h+r} V${mt+ih} Z` : "";
+    const rot=new Date(d.dia+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+    return `<g class="st-col" data-dica="${rot}: ${fmt(d.visitas)} visitas · ${fmt(d.visitantes)} visitantes"><rect x="${ml+i*bw}" y="${mt}" width="${bw}" height="${ih}" fill="transparent"/>${path?`<path d="${path}" class="st-barra"/>`:""}${i%cada===0?`<text x="${x+w/2}" y="${H-8}" text-anchor="middle" class="st-eixo">${rot}</text>`:""}</g>`; }).join("");
+  return `<div class="st-graf"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitas por dia">${grades}<line x1="${ml}" x2="${W-mr}" y1="${mt+ih}" y2="${mt+ih}" class="st-base"/>${barras}</svg><div class="st-dica" hidden></div></div>`;
+}
+function telaRedacaoStats(){
+  if(S.stats===undefined && !S.statsCarregando && !S.statsErro){ setTimeout(carregarStats,0); }
+  const st=S.stats;
+  const filtro=`<div class="st-filtro" role="group" aria-label="Período">${[7,30,90].map(d=>`<button class="${S.statsDias===d?"on":""}" data-dias="${d}">${d} dias</button>`).join("")}</div>`;
+  let corpo;
+  if(S.statsErro) corpo=`<div class="aviso">${esc(S.statsErro)}</div>`;
+  else if(!st) corpo=`<p class="meta" style="font-size:15px">Carregando estatísticas…</p>`;
+  else{
+    const dias=[]; const mapa=new Map((st.por_dia||[]).map(d=>[d.dia,d]));
+    for(let i=S.statsDias-1;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const k=d.toLocaleDateString("sv-SE",{timeZone:"America/Sao_Paulo"}); dias.push(mapa.get(k)||{dia:k,visitas:0,visitantes:0}); }
+    const titulo=id=>([...S.artigos,...S.rascunhos].find(a=>a.id===id)?.titulo)||id;
+    const ads=(st.anuncios||[]);
+    corpo=`${st.exemplo?`<div class="aviso" style="margin-bottom:18px"><b>Dados de exemplo.</b> Os números reais aparecem aqui assim que o site, ligado ao Supabase, começar a receber visitas.</div>`:""}
+    <div class="st-kpis">
+      <div class="st-kpi"><span>Visitas</span><b>${fmt(st.visitas)}</b><small>páginas vistas</small></div>
+      <div class="st-kpi"><span>Visitantes</span><b>${fmt(st.visitantes)}</b><small>pessoas diferentes (aprox.)</small></div>
+      <div class="st-kpi"><span>Leituras de matérias</span><b>${fmt(st.leituras)}</b><small>${st.visitantes?(st.visitas/st.visitantes).toLocaleString("pt-BR",{maximumFractionDigits:1})+" páginas por visitante":"—"}</small></div>
+      <div class="st-kpi"><span>Cliques em anúncios</span><b>${fmt(st.cliques)}</b><small>${fmt(st.exibicoes)} exibições · taxa ${pct(st.cliques,st.exibicoes)}</small></div>
+    </div>
+    <section class="painel st-bloco"><h3>Visitas por dia</h3>${graficoDias(dias)}</section>
+    <div class="st-duas">
+      <section class="painel st-bloco"><h3>Matérias mais lidas</h3>${(st.materias||[]).length?`<ol class="st-rank">${st.materias.map(m=>`<li><a href="/materia/${encodeURIComponent(m.id)}">${esc(titulo(m.id))}</a><b>${fmt(m.n)}</b></li>`).join("")}</ol>`:`<p class="meta">Ainda sem leituras no período.</p>`}</section>
+      <section class="painel st-bloco"><h3>De onde vêm os leitores</h3>${barrasH((st.origens||[]).map(o=>({rotulo:o.origem,n:o.n})), (st.origens||[]).reduce((a,o)=>a+o.n,0))}
+        <h3 style="margin-top:22px">Aparelhos</h3>${barrasH((st.dispositivos||[]).map(o=>({rotulo:o.dispositivo,n:o.n})), (st.dispositivos||[]).reduce((a,o)=>a+o.n,0))}</section>
+    </div>
+    <section class="painel st-bloco"><h3>Publicidade</h3>
+      ${ads.length?`<div class="tabela-wrap" style="border:0"><table class="st-tab"><thead><tr><th>Espaço</th><th>Anunciante</th><th class="n">Exibições</th><th class="n">Cliques</th><th class="n">Taxa de cliques</th></tr></thead><tbody>${ads.map(a=>`<tr><td>${esc(a.espaco||"—")}</td><td>${esc(a.alvo||"—")}</td><td class="n">${fmt(a.exibicoes)}</td><td class="n">${fmt(a.cliques)}</td><td class="n">${pct(a.cliques,a.exibicoes)}</td></tr>`).join("")}</tbody></table></div>`:`<p class="meta">Nenhuma exibição de anúncio registrada no período.</p>`}
+      <p class="meta" style="margin-top:10px">Exibição = o anúncio apareceu na tela do leitor. Taxa de cliques = cliques ÷ exibições.</p></section>
+    <section class="painel st-bloco"><h3>Compartilhamentos</h3>${barrasH((st.compartilhamentos_por||[]).map(o=>({rotulo:o.alvo,n:o.n})))}</section>
+    <p class="meta">Dados anônimos: não registramos nome, e-mail nem IP. Suas próprias visitas, logado na Redação, não entram na contagem.</p>`;
+  }
+  return abas("stats") + `<div class="st-topo"><h2 class="pub-secao" style="margin:0">Estatísticas</h2>${filtro}</div>${corpo}`;
+}
+function exemploStats(dias){
+  let seed=7; const rnd=()=>((seed=seed*16807%2147483647)/2147483647);
+  const por_dia=[]; let tv=0, tu=0;
+  for(let i=dias-1;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const v=Math.round(40+rnd()*60+(dias-i)*1.2), u=Math.round(v*.62); tv+=v; tu+=u; por_dia.push({dia:d.toLocaleDateString("sv-SE",{timeZone:"America/Sao_Paulo"}),visitas:v,visitantes:u}); }
+  const arts=S.artigos.slice(0,6);
+  return { exemplo:true, visitas:tv, visitantes:Math.round(tu*.7), leituras:Math.round(tv*.58), exibicoes:Math.round(tv*1.9), cliques:Math.round(tv*1.9*.012), por_dia,
+    materias:arts.map((a,i)=>({id:a.id,n:Math.round(tv*.2/(i+1))})),
+    origens:[{origem:"Google",n:Math.round(tu*.34)},{origem:"WhatsApp",n:Math.round(tu*.27)},{origem:"Acesso direto",n:Math.round(tu*.18)},{origem:"Instagram",n:Math.round(tu*.11)},{origem:"LinkedIn",n:Math.round(tu*.07)},{origem:"Outros sites",n:Math.round(tu*.03)}],
+    dispositivos:[{dispositivo:"Celular",n:Math.round(tv*.71)},{dispositivo:"Computador",n:Math.round(tv*.25)},{dispositivo:"Tablet",n:Math.round(tv*.04)}],
+    anuncios:[{espaco:"Topo",alvo:"Anunciante A",exibicoes:Math.round(tv*.9),cliques:Math.round(tv*.9*.014)},{espaco:"Lateral",alvo:"Anunciante B",exibicoes:Math.round(tv*.6),cliques:Math.round(tv*.6*.009)},{espaco:"Faixa",alvo:"Anunciante C",exibicoes:Math.round(tv*.4),cliques:Math.round(tv*.4*.011)}],
+    compartilhamentos_por:[{alvo:"WhatsApp",n:Math.round(tv*.03)},{alvo:"LinkedIn",n:Math.round(tv*.012)},{alvo:"Link copiado",n:Math.round(tv*.008)}] };
 }
 
 /* ---------- login ---------- */
@@ -1135,6 +1297,7 @@ const API = usarSupabase ? {
   async salvarConfig(c){ const {error} = await sb.from("config").upsert({id:"site", dados:c}); if(error) throw error; },
   async salvarPub(p){ const {error} = await sb.from("config").upsert({id:"publicidade", dados:p}); if(error) throw error; },
   async salvarPubMeio(p){ const {error} = await sb.from("config").upsert({id:"publicidade-meio", dados:p}); if(error) throw error; },
+  async estatisticas(dias){ const {data,error} = await sb.rpc("estatisticas",{dias}); if(error) throw error; return data||{}; },
   async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email:email.toLowerCase(), password:senha}); if(error) throw error; },
   async sair(){ await sb.auth.signOut(); }
 } : {
@@ -1148,6 +1311,7 @@ const API = usarSupabase ? {
   async salvarConfig(c){ const d=this.ler(); d.config=c; this.gravar(d); },
   async salvarPub(p){ const d=this.ler(); d.publicidade=p; this.gravar(d); },
   async salvarPubMeio(p){ const d=this.ler(); d.publicidadeMeio=p; this.gravar(d); },
+  async estatisticas(dias){ return exemploStats(dias); },
   async entrar(){ throw new Error("sem-banco"); }, async sair(){}
 };
 async function recarregar(){
@@ -1161,6 +1325,7 @@ render();
   try{ await API.iniciar(); }catch(e){ console.error(e); }
   await recarregar();
   S.carregado=true; render();
+  Rastreio.visita();
 })();
 </script>
 </body>
