@@ -122,6 +122,9 @@ main{padding-block:26px 60px}
 .mais li{padding:12px 0 12px 14px;border-bottom:1px solid var(--line);position:relative}
 .mais li::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:2px;background:var(--ed,var(--accent))}
 .mais li:last-child{border-bottom:0}
+.mais-esq{margin-top:26px}
+.mais-esq ul{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
+.mais-esq li:last-child{border-bottom:1px solid var(--line)}
 .mais a{display:flex;flex-direction:column;gap:3px}
 .mais .kicker{font-size:10.5px}
 .mais-t{font-family:var(--f-display);font-weight:600;font-size:17px;line-height:1.25}
@@ -231,6 +234,7 @@ main{padding-block:26px 60px}
 .cta-pal h3{font-size:24px;line-height:1.15;margin:0 0 8px}
 .cta-pal p{margin:0 0 14px;color:var(--ink-2);font-size:15px;line-height:1.5}
 .cta-pal .btn{display:inline-flex;align-items:center;gap:8px}
+.cta-home .cta-pal{max-width:1000px;margin:44px auto 0;padding:26px 34px}
 .cta-pal.lat{grid-template-columns:minmax(0,1fr);text-align:center;justify-items:center;padding:22px 18px;margin:26px 0 0;gap:12px}
 .cta-pal.lat .cta-foto,.cta-pal.lat .cta-mono{width:84px;height:84px}
 .cta-pal.lat h3{font-size:20px}
@@ -446,17 +450,22 @@ function telaHome(){
   const manchete = destaques[0] || base[0];
   const secund = [...destaques.slice(1), ...base.filter(a=>!a.destaque)].filter(a=>a!==manchete).slice(0,2);
   const usados = new Set([manchete, ...secund].map(a=>a.id));
+  const poolMais = todos.filter(a=>a.id!==manchete.id && !secund.includes(a)).slice(0,10);
+  const maisHTML = cls => poolMais.length?`<div class="${cls}" hidden><div class="mais-tit">Mais notícias</div><ul>${poolMais.map(a=>`<li data-ed="${esc(a.editoria)}"><a href="${link(a)}"><span class="kicker" data-ed="${esc(a.editoria)}">${esc(EDITORIAS[a.editoria]?.nome||"")}</span><span class="mais-t">${esc(a.titulo)}</span></a></li>`).join("")}</ul></div>`:"";
   let h = `<section class="hero">
-    <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
-    <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}${(()=>{ const mais=todos.filter(a=>a.id!==manchete.id && !secund.includes(a)).slice(0,6); return mais.length?`<div class="mais"><div class="mais-tit">Mais notícias</div><ul>${mais.map(a=>`<li data-ed="${esc(a.editoria)}"><a href="${link(a)}"><span class="kicker" data-ed="${esc(a.editoria)}">${esc(EDITORIAS[a.editoria]?.nome||"")}</span><span class="mais-t">${esc(a.titulo)}</span></a></li>`).join("")}</ul></div>`:""; })()}</div>
-    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}${blocoCTA(true)}</aside>
+    <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article>${maisHTML("mais mais-esq")}</div>
+    <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}${maisHTML("mais")}</div>
+    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
     ${blocoPubMeio()}
   </section>`;
+  let nSec=0;
   for(const [k,e] of Object.entries(EDITORIAS)){
     const l = todos.filter(a=>a.editoria===k && a.id!==manchete.id).slice(0,4);
     if(!l.length) continue;
     h += `<section class="secao">${bloco(e.nome,"#"+k,k)}<div class="grade4">${l.map(a=>card(a)).join("")}</div></section>`;
+    if(++nSec===1) h += `<div class="cta-home">${blocoCTA(false)}</div>`;
   }
+  if(!nSec) h += `<div class="cta-home">${blocoCTA(false)}</div>`;
   const ops = todos.filter(a=>a.tipo==="artigo").slice(0,3);
   if(ops.length){
     h += `</div><section class="opiniao"><div class="wrap">${bloco("Opinião","#opiniao")}<div class="op-grid">${ops.map(a=>`<article class="op"><a href="${link(a)}"><span class="avatar">${esc(iniciais(a.autor))}</span><div><span class="kicker" data-ed="${esc(a.editoria)}" >${esc(EDITORIAS[a.editoria]?.nome||"")}</span><h3>${esc(a.titulo)}</h3><div class="autor">${esc(a.autor||"Redação")}${a.cargoAutor?" · "+esc(a.cargoAutor):""}</div></div></a></article>`).join("")}</div></div></section><div class="wrap">`;
@@ -1046,15 +1055,30 @@ function blocoPubLat(){
   </div></div>`;
 }
 function ajustarMais(){
-  const col=document.querySelector(".col-sec"), esq=document.querySelector(".col-esq"), lis=[...document.querySelectorAll(".mais li")];
-  if(!col||!esq||!lis.length) return;
-  lis.forEach(l=>l.hidden=false); const mx=document.querySelector(".mais"); if(mx) mx.hidden=false;
-  if(window.innerWidth<=1000) { lis.slice(4).forEach(l=>l.hidden=true); return; }
-  const fimEsq=()=>esq.lastElementChild.getBoundingClientRect().bottom, fimCol=()=>col.lastElementChild.getBoundingClientRect().bottom;
-  const mais=document.querySelector(".mais"); if(mais) mais.hidden=false;
-  const minimo = 1;
-  for(let i=lis.length-1;i>=minimo && fimCol() > fimEsq()+30;i--) lis[i].hidden=true;
-  if(mais && lis.every(l=>l.hidden)) mais.hidden=true;
+  const esq=document.querySelector(".col-esq"), col=document.querySelector(".col-sec"), aside=document.querySelector(".hero .ultimas");
+  if(!esq||!col) return;
+  const mE=esq.querySelector(".mais-esq"), mC=col.querySelector(".mais");
+  const ult=aside?[...aside.querySelectorAll(".ult-list li")]:[];
+  [mE,mC].forEach(m=>{ if(m){ m.hidden=true; m.querySelectorAll("li").forEach(l=>l.hidden=false); } });
+  ult.forEach(l=>l.hidden=false);
+  if(window.innerWidth<=1000){ if(mC){ mC.hidden=false; [...mC.querySelectorAll("li")].slice(4).forEach(l=>l.hidden=true); } return; }
+  const fundo=el=>{ const v=[...el.children].filter(c=>!c.hidden); return v.length? v[v.length-1].getBoundingClientRect().bottom : el.getBoundingClientRect().top; };
+  const faixa=document.querySelector(".hero .pub-meio"), faixaH = faixa ? faixa.getBoundingClientRect().height + 28 : 0;
+  const base=()=>Math.max(fundo(esq), fundo(col));
+  // 1) coluna da direita: no máximo até a faixa (mínimo de 4 "Últimas")
+  if(aside) for(let i=ult.length-1;i>=4 && fundo(aside)-faixaH > base()+12;i--) ult[i].hidden=true;
+  const alvo = Math.max(base(), aside ? fundo(aside)-faixaH : 0);
+  // 2) completa a coluna mais curta com "Mais notícias" até a mesma linha
+  const usados=new Set();
+  for(const [colEl,m] of [[esq,mE],[col,mC]]){
+    if(!m || fundo(colEl) > alvo-90) continue;
+    const lis=[...m.querySelectorAll("li")]; lis.forEach(l=>l.hidden=true); m.hidden=false;
+    const livres=lis.filter(l=>!usados.has(l.querySelector("a").getAttribute("href")));
+    let n=0;
+    for(const l of livres){ l.hidden=false; if(fundo(colEl) > alvo+14){ l.hidden=true; break; } n++; usados.add(l.querySelector("a").getAttribute("href")); }
+    if(m.classList.contains("mais-esq") && n%2===1){ const vis=lis.filter(l=>!l.hidden); vis[vis.length-1].hidden=true; usados.delete(vis[vis.length-1].querySelector("a").getAttribute("href")); n--; }
+    if(!n) m.hidden=true;
+  }
 }
 window.addEventListener("resize",()=>{ clearTimeout(ajustarMais._t); ajustarMais._t=setTimeout(ajustarMais,150); });
 function meioItens(todos){
