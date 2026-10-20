@@ -224,6 +224,21 @@ main{padding-block:26px 60px}
 .tags a{font-size:12.5px;font-weight:600;border:1px solid var(--line);padding:4px 10px;border-radius:99px;color:var(--ink-2);background:var(--surface)}
 .tags a:hover{border-color:var(--ink-2)}
 .leia{max-width:1000px;margin:54px auto 0}
+.cta-pal{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;background:var(--accent-soft);border:1px solid #CFE6F5;border-radius:6px;padding:24px 26px;margin:36px 0 0}
+.cta-pal .cta-foto{width:104px;height:104px;border-radius:50%;object-fit:cover;display:block;border:3px solid #fff;box-shadow:0 2px 10px rgba(11,127,193,.18)}
+.cta-pal .cta-mono{width:104px;height:104px;border-radius:50%;background:var(--accent);display:grid;place-items:center;border:3px solid #fff;box-shadow:0 2px 10px rgba(11,127,193,.18)}
+.cta-pal .kicker{display:block;margin-bottom:6px}
+.cta-pal h3{font-size:24px;line-height:1.15;margin:0 0 8px}
+.cta-pal p{margin:0 0 14px;color:var(--ink-2);font-size:15px;line-height:1.5}
+.cta-pal .btn{display:inline-flex;align-items:center;gap:8px}
+.cta-pal.lat{grid-template-columns:minmax(0,1fr);text-align:center;justify-items:center;padding:22px 18px;margin:26px 0 0;gap:12px}
+.cta-pal.lat .cta-foto,.cta-pal.lat .cta-mono{width:84px;height:84px}
+.cta-pal.lat h3{font-size:20px}
+.cta-pal.lat p{font-size:14px}
+.pagina .corpo{margin-top:30px}
+.pagina .corpo h2:first-child{margin-top:0}
+.pagina .atualizado{font-size:13px;color:var(--muted);margin:-6px 0 22px}
+.cta-prev{width:84px;height:84px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
 .grade3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .voltar{font-size:13px;font-weight:700;color:var(--muted);display:inline-block;margin-bottom:18px}
 .voltar:hover{color:var(--ink)}
@@ -298,6 +313,8 @@ footer nav a:hover{color:var(--accent)}
 @media (max-width:680px){
   .wrap{padding-inline:16px}
   .hero,.op-grid,.grade3{grid-template-columns:minmax(0,1fr)}
+  .cta-pal{grid-template-columns:minmax(0,1fr);text-align:center;justify-items:center;padding:22px 18px}
+  .cta-pal .cta-foto,.cta-pal .cta-mono{width:84px;height:84px}
   .grade4{grid-template-columns:minmax(0,1fr)}
   .sec-item{grid-template-columns:minmax(0,1fr);gap:10px}
   .busca-top input{width:140px}
@@ -378,7 +395,7 @@ function inline(s){
   return esc(s)
     .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
     .replace(/(^|[^*])\*(?!\s)(.+?)\*/g,"$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 function corpoHTML(txt){
   return String(txt||"").replace(/\r/g,"").split(/\n\s*\n/).map(b=>{
@@ -432,7 +449,7 @@ function telaHome(){
   let h = `<section class="hero">
     <div class="col-esq">${blocoPub()}<article class="manchete"><a href="${link(manchete)}">${capa(manchete)}<div style="margin-top:14px">${kicker(manchete)}</div><h1>${esc(manchete.titulo)}</h1>${manchete.linhaFina?`<p class="fina">${esc(manchete.linhaFina)}</p>`:""}<div class="meta">${esc(manchete.autor||"Redação")} · ${esc(quando(manchete.publicadoEm))}</div></a></article></div>
     <div class="col-sec">${secund.map(a=>card(a)).join("") || ""}${(()=>{ const mais=todos.filter(a=>a.id!==manchete.id && !secund.includes(a)).slice(0,6); return mais.length?`<div class="mais"><div class="mais-tit">Mais notícias</div><ul>${mais.map(a=>`<li data-ed="${esc(a.editoria)}"><a href="${link(a)}"><span class="kicker" data-ed="${esc(a.editoria)}">${esc(EDITORIAS[a.editoria]?.nome||"")}</span><span class="mais-t">${esc(a.titulo)}</span></a></li>`).join("")}</ul></div>`:""; })()}</div>
-    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}</aside>
+    <aside class="ultimas">${bloco("Últimas")}${ultimasLista(todos.slice(0,8))}${blocoPubLat()}${blocoCTA(true)}</aside>
     ${blocoPubMeio()}
   </section>`;
   for(const [k,e] of Object.entries(EDITORIAS)){
@@ -456,7 +473,7 @@ function telaSecao(k){
   const nome = opin?"Opinião":EDITORIAS[k].nome, desc = opin?"Artigos assinados, análises e pontos de vista.":EDITORIAS[k].desc;
   return `<header class="sec-head" ${opin?"":`data-ed="${k}"`}><h1>${esc(nome)}</h1><p>${esc(desc)}</p></header>
   <div class="sec-layout"><div>${l.length?listaSecao(l):`<p class="meta" style="font-size:15px">Ainda não há matérias nesta editoria.</p>`}</div>
-  <aside>${bloco("Últimas")}${ultimasLista(todos.slice(0,6))}${blocoPubLat()}</aside></div>`;
+  <aside>${bloco("Últimas")}${ultimasLista(todos.slice(0,6))}${blocoPubLat()}${blocoCTA(true)}</aside></div>`;
 }
 function telaBusca(){
   const q = S.busca.trim().toLowerCase();
@@ -483,13 +500,127 @@ function artigoHTML(a){
 function telaMateria(id){
   const a = S.artigos.find(x=>x.id===id) || (S.editor && S.rascunhos.find(x=>x.id===id));
   if(!a) return `<div class="vazio"><h2>Matéria não encontrada</h2><p>Ela pode ter sido removida ou ainda não foi publicada.</p><a class="btn" href="/#">Voltar à capa</a></div>`;
-  const rel = ordenar(publicados()).filter(x=>x.id!==a.id && x.editoria===a.editoria).slice(0,3);
-  const extra = rel.length<3 ? ordenar(publicados()).filter(x=>x.id!==a.id && !rel.includes(x)).slice(0,3-rel.length) : [];
+  const tg=new Set((a.tags||[]).map(t=>String(t).toLowerCase()));
+  const pont = x => (x.editoria===a.editoria?2:0) + (x.tags||[]).filter(t=>tg.has(String(t).toLowerCase())).length;
+  const rel = ordenar(publicados()).filter(x=>x.id!==a.id).sort((x,y)=>pont(y)-pont(x)).slice(0,3), extra=[];
   return `<a class="voltar" href="/#${a.tipo==="artigo"?"opiniao":a.editoria}">← ${a.tipo==="artigo"?"Opinião":esc(EDITORIAS[a.editoria]?.nome)}</a>
   ${S.rascunhos.includes(a)?`<div class="aviso" style="max-width:760px;margin:0 auto 18px">Rascunho — só a Redação vê esta página.</div>`:""}
   ${S.editor?`<div style="max-width:760px;margin:0 auto 14px;text-align:right"><button class="btn pequeno" data-editar="${esc(a.id)}">Editar matéria</button></div>`:""}
   ${artigoHTML(a)}
+  ${S.rascunhos.includes(a)?"":`<div class="materia">${blocoCTA(false)}</div>`}
   ${[...rel,...extra].length?`<section class="leia">${bloco("Leia também")}<div class="grade3">${[...rel,...extra].map(x=>card(x)).join("")}</div></section>`:""}`;
+}
+
+/* ---------- quadro de palestras ---------- */
+const CTA_PADRAO = {
+  ativo:true,
+  titulo:"Leve o encantamento para a sua empresa",
+  texto:"Palestras, treinamentos e imersões com Daniel Donato sobre atendimento, experiência do cliente e liderança, inspirados na cultura Disney.",
+  botao:"Fale pelo WhatsApp",
+  link:"https://wa.me/5585999711108?text="+encodeURIComponent("Olá! Vi o CX inFoco e gostaria de saber sobre palestras e treinamentos."),
+  imagem:""
+};
+function ctaCfg(){ return {...CTA_PADRAO, ...(S.config.cta||{})}; }
+function blocoCTA(lat){
+  const c=ctaCfg(); if(c.ativo===false || !c.link || !c.titulo) return "";
+  const foto = c.imagem ? `<img class="cta-foto" src="${esc(c.imagem)}" alt="">` :
+    `<span class="cta-mono" aria-hidden="true"><svg width="54" height="26" viewBox="0 0 54 26" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h12l4-10 7 18 5-12 3 4h19"/></svg></span>`;
+  return `<aside class="cta-pal${lat?" lat":""}" aria-label="Palestras e treinamentos">${foto}<div>
+    <span class="kicker">Palestras e treinamentos</span><h3>${esc(c.titulo)}</h3>${c.texto?`<p>${esc(c.texto)}</p>`:""}
+    <a class="btn pri" href="${esc(c.link)}" target="_blank" rel="noopener" data-cta="1">${esc(c.botao||"Saiba mais")}</a></div></aside>`;
+}
+function observarCTA(){
+  (observarCTA._o||[]).forEach(o=>o.disconnect()); observarCTA._o=[];
+  if(!("IntersectionObserver" in window)) return;
+  document.querySelectorAll(".cta-pal").forEach(el=>{
+    const o=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ o.disconnect(); Rastreio.evento({tipo:"exibicao_anuncio", espaco:"Palestras", alvo:"Quadro de palestras"}); } },{threshold:.5});
+    o.observe(el); observarCTA._o.push(o);
+  });
+}
+
+/* ---------- páginas institucionais ---------- */
+const SOBRE_PADRAO = `## O que é o {nome}
+
+O {nome} é um portal de notícias, análises e artigos sobre **atendimento, experiência do cliente e liderança**. Reunimos tendências do mercado, boas práticas, casos reais e reflexões para quem acredita que a experiência do cliente se constrói todos os dias, em cada contato.
+
+## O que você encontra aqui
+
+- **Atendimento:** canais, operação, qualidade e as pessoas na linha de frente.
+- **Experiência do Cliente:** jornada, métricas, pesquisa e tudo o que molda a percepção do cliente.
+- **Liderança:** gestão de times, cultura e decisões que sustentam a experiência.
+- **Opinião:** artigos assinados por especialistas.
+
+## Quem está por trás
+
+O {nome} é editado por **Daniel Donato**, palestrante, mentor e especialista em experiência do cliente, liderança e encantamento, com formação baseada na metodologia Disney. Fundador da Sinapse Consultoria e Treinamentos, já treinou mais de 38 mil pessoas em 9 estados brasileiros.
+
+## Fale com a gente
+
+Sugestões de pauta, correções e parcerias: [{email}](mailto:{email}).`;
+function emailContato(){ return S.config.emailContato || "comercial@sinapseonline.com"; }
+function preencher(t){ const n=S.config.nome||"CX em Foco"; return t.replace(/\{nome\}/g,n).replace(/\{email\}/g,emailContato()); }
+function telaSobre(){
+  const n=S.config.nome||"CX em Foco";
+  return `<article class="materia pagina"><span class="kicker">Institucional</span><h1>Sobre o ${esc(n)}</h1>
+    <div class="corpo">${corpoHTML(preencher(S.config.paginaSobre||SOBRE_PADRAO))}</div>${blocoCTA(false)}</article>`;
+}
+function telaPrivacidade(){
+  const n=S.config.nome||"CX em Foco", em=emailContato();
+  const t = `Esta política explica, de forma simples, quais dados o {nome} trata quando você visita o portal, com que finalidade e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, LGPD).
+
+## Quem é o responsável
+
+O {nome} é editado por Daniel Donato. Para qualquer assunto sobre privacidade e dados pessoais, escreva para [{email}](mailto:{email}).
+
+## Quais dados coletamos
+
+Para ler as matérias, **você não precisa se cadastrar** nem informar nome, e-mail ou telefone.
+
+Para entender como o portal é usado e melhorar o conteúdo, registramos estatísticas de acesso de forma **anônima**:
+
+- a página ou matéria visitada e a data e hora da visita;
+- de onde você chegou (por exemplo: Google, WhatsApp, LinkedIn ou acesso direto);
+- o tipo de aparelho (celular, tablet ou computador);
+- um código aleatório guardado no seu navegador, que serve apenas para contar visitantes únicos e não identifica quem você é;
+- quando você vê ou clica em um anúncio, no quadro de palestras ou em um botão de compartilhar.
+
+**Não** coletamos seu nome, e-mail, telefone ou localização, e **não** usamos esses dados para traçar perfil de publicidade.
+
+## Armazenamento no navegador
+
+O portal usa o armazenamento local do navegador (localStorage e sessionStorage) para guardar o código anônimo de visitante e a origem da visita. Não usamos cookies de publicidade nem ferramentas de rastreamento de terceiros. Você pode apagar esses dados a qualquer momento nas configurações do seu navegador.
+
+## Serviços que nos ajudam a funcionar
+
+Como qualquer site, o {nome} depende de fornecedores que podem receber dados técnicos da conexão, como o endereço IP, para entregar o conteúdo com segurança:
+
+- **Vercel:** hospedagem do site;
+- **Supabase:** banco de dados onde ficam as matérias e as estatísticas;
+- **Google Fonts** e **jsDelivr:** fontes e componentes técnicos da página.
+
+Esses dados são usados apenas para o funcionamento e a segurança do site.
+
+## Links e anúncios
+
+As matérias e os anúncios podem levar a outros sites, como WhatsApp, LinkedIn ou páginas de anunciantes. Ao sair do {nome}, vale a política de privacidade do site visitado.
+
+## Área da Redação
+
+A área da Redação é restrita aos editores do portal. Os dados de login são usados apenas para dar acesso a essa área.
+
+## Por quanto tempo guardamos
+
+As estatísticas de acesso são mantidas enquanto forem úteis para acompanhar a audiência do portal e podem ser apagadas a qualquer momento.
+
+## Seus direitos
+
+Pela LGPD, você pode pedir confirmação de tratamento, acesso, correção ou exclusão de dados, além de informações sobre o compartilhamento. Como as estatísticas são anônimas, normalmente não conseguimos associá-las a uma pessoa, mas responderemos a qualquer pedido pelo e-mail [{email}](mailto:{email}).
+
+## Alterações
+
+Esta política pode ser atualizada quando o portal ganhar novos recursos. A data da última atualização aparece no início da página.`;
+  return `<article class="materia pagina"><span class="kicker">Institucional</span><h1>Política de Privacidade</h1>
+    <p class="atualizado">Última atualização: 20 de outubro de 2026</p><div class="corpo">${corpoHTML(preencher(t))}</div></article>`;
 }
 
 /* ---------- redação ---------- */
@@ -560,12 +691,25 @@ function telaRedacaoForm(){
   </form><div id="previa"></div>`;
 }
 function telaRedacaoConfig(){
-  const c=S.config;
+  const c=S.config, cta=ctaCfg();
+  if(S.ctaImg===undefined) S.ctaImg=cta.imagem||"";
   return abas("config") + `<form id="form-config" class="painel" style="max-width:640px">
     <div class="campo"><label for="c-nome">Nome do portal</label><input id="c-nome" value="${esc(c.nome)}"><small>Uma sigla em maiúsculas no início ou no fim do nome fica destacada em azul no logotipo (ex.: <b>CX</b> em Foco).</small></div>
     <div class="campo"><label for="c-slogan">Slogan</label><textarea id="c-slogan" class="fina" style="min-height:60px">${esc(c.slogan)}</textarea><small>Aperte Enter para quebrar a linha onde quiser.</small></div>
     <div class="campo"><label for="c-sobre">Texto do rodapé</label><textarea id="c-sobre" class="fina">${esc(c.sobre)}</textarea></div>
     <div class="campo"><label for="c-autor">Autor padrão das novas matérias</label><input id="c-autor" value="${esc(c.autorPadrao||"")}" placeholder="Seu nome"></div>
+    <div class="campo"><label for="c-email">E-mail de contato do portal</label><input id="c-email" type="email" value="${esc(c.emailContato||"")}" placeholder="comercial@sinapseonline.com"><small>Aparece nas páginas Sobre e Política de Privacidade.</small></div>
+    <h2 style="font-size:24px;margin:30px 0 4px">Quadro de palestras</h2>
+    <p class="meta" style="font-size:13.5px;margin:0 0 16px">Aparece no fim de cada matéria e na coluna lateral da capa. Os cliques aparecem em Estatísticas, no espaço “Palestras”.</p>
+    <div class="campo"><label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="c-cta-ativo" ${cta.ativo!==false?"checked":""}> Mostrar o quadro de palestras no site</label></div>
+    <div class="campo"><label>Foto</label><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">${S.ctaImg?`<img class="cta-prev" id="c-cta-prev" src="${esc(S.ctaImg)}" alt="">`:`<span class="meta" id="c-cta-prev">Sem foto (aparece um ícone)</span>`}<label class="btn pequeno" for="c-cta-img" style="cursor:pointer">${S.ctaImg?"Trocar foto":"Enviar foto"}</label>${S.ctaImg?`<button type="button" class="btn pequeno perigo" data-acao="cta-tirar">Remover</button>`:""}<input type="file" id="c-cta-img" accept="image/*" hidden></div><small>Uma foto sua, de preferência quadrada e com o rosto centralizado.</small></div>
+    <div class="campo"><label for="c-cta-titulo">Título</label><input id="c-cta-titulo" value="${esc(cta.titulo)}"></div>
+    <div class="campo"><label for="c-cta-texto">Texto</label><textarea id="c-cta-texto" class="fina" style="min-height:70px">${esc(cta.texto)}</textarea></div>
+    <div class="campo"><label for="c-cta-botao">Texto do botão</label><input id="c-cta-botao" value="${esc(cta.botao)}"></div>
+    <div class="campo"><label for="c-cta-link">Link do botão</label><input id="c-cta-link" value="${esc(cta.link)}"><small>Pode ser o WhatsApp (https://wa.me/55DDDNÚMERO), o seu site ou um formulário.</small></div>
+    <h2 style="font-size:24px;margin:30px 0 4px">Página “Sobre”</h2>
+    <p class="meta" style="font-size:13.5px;margin:0 0 16px">Endereço: <a href="/sobre" target="_blank" style="color:var(--accent)">${esc(location.host)}/sobre</a>. Deixe em branco para usar o texto padrão. Use a mesma formatação das matérias (## intertítulo, **negrito**, - lista).</p>
+    <div class="campo"><label for="c-pagsobre">Texto da página</label><textarea id="c-pagsobre" style="min-height:260px;font-family:var(--f-ui);font-size:14px" placeholder="${esc(preencher(SOBRE_PADRAO))}">${esc(c.paginaSobre||"")}</textarea></div>
     <div><button class="btn pri">Salvar configurações</button></div>
   </form>`;
 }
@@ -574,10 +718,11 @@ function telaRedacaoConfig(){
 function rota(){
   const m=location.pathname.match(/^\/materia\/([^\/?#]+)/);
   if(m) return "m-"+decodeURIComponent(m[1]);
+  if(/^\/(sobre|privacidade)\/?$/.test(location.pathname)) return location.pathname.replace(/\//g,"");
   return decodeURIComponent(location.hash.replace(/^#/,""));
 }
 function irPara(r){
-  const url = r.startsWith("m-") ? "/materia/"+encodeURIComponent(r.slice(2)) : (r ? "/#"+r : "/");
+  const url = r.startsWith("m-") ? "/materia/"+encodeURIComponent(r.slice(2)) : (r==="sobre"||r==="privacidade") ? "/"+r : (r ? "/#"+r : "/");
   history.pushState(null,"",url); aoMudarRota();
 }
 function renderShell(){
@@ -593,7 +738,7 @@ function renderShell(){
   const itens=[["","Capa"],...Object.entries(EDITORIAS).map(([k,e])=>[k,e.nome]),["opiniao","Opinião"]];
   const ativo = r.startsWith("m-") ? (S.artigos.find(a=>"m-"+a.id===r)?.editoria) : r;
   $("#nav").innerHTML = itens.map(([k,t])=>`<a href="/#${k}" ${EDITORIAS[k]?`data-ed="${k}"`:""} class="${ativo===k?"on":""}">${t}</a>`).join("");
-  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="/#${k}">${t}</a>`).join("") + `<a href="/#redacao">Redação</a>`;
+  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="/#${k}">${t}</a>`).join("") + `<a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/#redacao">Redação</a>`;
   const ult = ordenar(publicados()).slice(0,6);
   $("#ticker").hidden = !ult.length || r.startsWith("redacao");
   const itensT = ult.map(a=>`<a href="${link(a)}"><time>${esc(horaCurta(a.publicadoEm))}</time><span>${esc(a.titulo)}</span></a>`).join("");
@@ -611,6 +756,8 @@ function render(scrollTop){
   if(r==="") h=telaHome();
   else if(EDITORIAS[r]||r==="opiniao") h=telaSecao(r);
   else if(r==="busca") h=telaBusca();
+  else if(r==="sobre"){ h=telaSobre(); }
+  else if(r==="privacidade"){ h=telaPrivacidade(); }
   else if(r.startsWith("m-")) h=telaMateria(r.slice(2));
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
@@ -620,8 +767,11 @@ function render(scrollTop){
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
+  if(r==="sobre") document.title="Sobre | "+(S.config.nome||"CX em Foco");
+  if(r==="privacidade") document.title="Política de Privacidade | "+(S.config.nome||"CX em Foco");
   if(r.startsWith("m-")){ const am=[...S.artigos,...S.rascunhos].find(x=>x.id===r.slice(2)); if(am) document.title = am.titulo+" | "+(S.config.nome||"CX em Foco"); }
   iniciarCarrossel();
+  observarCTA();
   ajustarMais();
   if(scrollTop) window.scrollTo(0,0);
 }
@@ -705,6 +855,7 @@ function aoMudarRota(){
   if(r==="redacao-nova"){ abrirForm(null); }
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
   if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; S.meioForm=null; }
+  if(r!=="redacao-config") S.ctaImg=undefined;
   S.confirmar=null; render(true);
   Rastreio.visita();
 }
@@ -722,7 +873,7 @@ window.addEventListener("popstate",aoMudarRota);
 document.addEventListener("click",e=>{
   const a=e.target.closest("a[href]"); if(!a || a.target==="_blank" || e.ctrlKey || e.metaKey || e.shiftKey || e.button>0) return;
   const h=a.getAttribute("href");
-  if(h.startsWith("/materia/") || h.startsWith("/#") || h==="/"){
+  if(h.startsWith("/materia/") || h.startsWith("/#") || h==="/" || h==="/sobre" || h==="/privacidade"){
     if(a.dataset.tag) return;
     e.preventDefault();
     if(location.pathname+location.hash===h) { aoMudarRota(); return; }
@@ -732,6 +883,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("click",e=>{
   const ad=e.target.closest("a.pub-slide");
   if(ad){ const cx=ad.closest(".pub-caixa"); Rastreio.evento({tipo:"clique_anuncio", espaco:cx?.dataset.espaco||"", alvo:ad.dataset.anuncio||""}); }
+  if(e.target.closest("[data-cta]")) Rastreio.evento({tipo:"clique_anuncio", espaco:"Palestras", alvo:"Quadro de palestras"});
   const sh=e.target.closest("[data-rede]");
   if(sh){ const r=rota(); Rastreio.evento({tipo:"compartilhar", alvo:sh.dataset.rede, materia:r.startsWith("m-")?r.slice(2):null}); }
 },true);
@@ -771,6 +923,7 @@ document.addEventListener("click",async e=>{
   }
   const ac=t.dataset.acao;
   if(ac==="sair"){ await API.sair(); S.editor=false; await recarregar(); irPara(""); toast("Você saiu da Redação"); return; }
+  if(ac==="cta-tirar"){ S.ctaImg=""; const pv=$("#c-cta-prev"); if(pv) pv.outerHTML=`<span class="meta" id="c-cta-prev">Sem foto (aparece um ícone). Clique em Salvar configurações.</span>`; t.remove(); return; }
   if(ac==="salvar-pub"){ t.disabled=true; await salvarPub(); t.disabled=false; return; }
   if(ac==="url-titulo"){ const tt=$("#f-titulo").value.trim(); if(!tt){ toast("Escreva o título primeiro"); return; } $("#f-url").value=novoId(tt, S.editandoId); return; }
   if(ac==="cancelar"){ S.confirmar=null; render(); }
@@ -820,6 +973,8 @@ async function importarMaterias(file){
   alert(msg);
 }
 document.addEventListener("change",async e=>{
+  if(e.target.id==="c-cta-img"){ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+    try{ S.ctaImg=await comprimir(f,360,60000); const pv=$("#c-cta-prev"); if(pv) pv.outerHTML=`<img class="cta-prev" id="c-cta-prev" src="${S.ctaImg}" alt="">`; toast("Foto pronta. Clique em Salvar configurações."); }catch{ toast("Não foi possível ler a imagem."); } return; }
   if(e.target.id==="f-importar"){ const f=e.target.files[0]; e.target.value=""; if(f) await importarMaterias(f); return; }
   if(e.target.dataset && e.target.dataset.meioimg!==undefined && e.target.files[0]){
     const i=+e.target.dataset.meioimg; lerPubForm();
@@ -846,7 +1001,9 @@ document.addEventListener("change",async e=>{
   catch{ toast("Não foi possível ler essa imagem. Tente um JPG ou PNG."); }
 });
 async function salvarConfig(){
-  const c={nome:$("#c-nome").value.trim()||"CX em Foco",slogan:$("#c-slogan").value.trim(),sobre:$("#c-sobre").value.trim(),autorPadrao:$("#c-autor").value.trim()};
+  const c={...S.config, nome:$("#c-nome").value.trim()||"CX em Foco",slogan:$("#c-slogan").value.trim(),sobre:$("#c-sobre").value.trim(),autorPadrao:$("#c-autor").value.trim(),
+    emailContato:$("#c-email").value.trim(), paginaSobre:$("#c-pagsobre").value.trim(),
+    cta:{ativo:$("#c-cta-ativo").checked, titulo:$("#c-cta-titulo").value.trim(), texto:$("#c-cta-texto").value.trim(), botao:$("#c-cta-botao").value.trim(), link:$("#c-cta-link").value.trim(), imagem:S.ctaImg||""}};
   try{ await API.salvarConfig(c); S.config={...S.config,...c}; renderShell(); toast("Configurações salvas"); }
   catch{ toast("Não foi possível salvar as configurações."); }
 }
