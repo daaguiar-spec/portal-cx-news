@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
   let l = [];
   try { l = await supa("materias?status=eq.publicado&select=id,publicado_em,atualizado_em&order=publicado_em.desc&limit=5000"); } catch (e) { console.error(e); }
   const agora = new Date();
-  const urls = [`<url><loc>${base}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`]
+  const urls = [`<url><loc>${base}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`, `<url><loc>${base}/sobre</loc><priority>0.3</priority></url>`, `<url><loc>${base}/privacidade</loc><priority>0.2</priority></url>`]
     .concat(l.filter(x => new Date(x.publicado_em) <= agora).map(x =>
       `<url><loc>${esc(base + "/materia/" + encodeURIComponent(x.id))}</loc><lastmod>${new Date(x.atualizado_em || x.publicado_em).toISOString()}</lastmod></url>`));
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
