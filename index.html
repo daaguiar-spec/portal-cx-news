@@ -494,7 +494,7 @@ function telaMateria(id){
 
 /* ---------- redação ---------- */
 function abas(on){
-  return `<div class="redacao-top"><div><span class="kicker">Área restrita</span><h1>Redação</h1></div><a class="btn pri" href="/#redacao-nova">+ Nova matéria</a></div>
+  return `<div class="redacao-top"><div><span class="kicker">Área restrita</span><h1>Redação</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" for="f-importar" style="cursor:pointer" title="Cadastrar várias matérias de uma vez a partir de um arquivo .json">Importar matérias</label><input type="file" id="f-importar" accept=".json,application/json" hidden><a class="btn pri" href="/#redacao-nova">+ Nova matéria</a></div></div>
   <nav class="abas"><a href="/#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="/#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="/#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="/#redacao-stats" class="${on==="stats"?"on":""}">Estatísticas</a><a href="/#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
 }
 function telaRedacaoLista(){
@@ -788,7 +788,39 @@ document.addEventListener("click",async e=>{
     if(S.prev) $("#previa").scrollIntoView({behavior:"smooth"});
   }
 });
+async function imagemDeUrl(u){
+  try{ const r=await fetch(u); if(!r.ok) throw 0; const b=await r.blob(); if(!/^image\//.test(b.type)) throw 0; return await comprimir(b); }catch{ return ""; }
+}
+async function importarMaterias(file){
+  let lista;
+  try{ const j=JSON.parse(await file.text()); lista=Array.isArray(j)?j:j.materias; if(!Array.isArray(lista)||!lista.length) throw 0; }
+  catch{ toast("Arquivo inválido. Use o arquivo .json de importação."); return; }
+  if(S.demo){ toast("A importação só funciona com o login da Redação ativo."); return; }
+  let ok=0, semImg=[], falhas=[];
+  for(const [i,m] of lista.entries()){
+    if(!m||!m.titulo||!m.corpo){ falhas.push("item "+(i+1)); continue; }
+    toast(`Importando ${i+1} de ${lista.length}…`);
+    const id = m.id ? slug(m.id).slice(0,80) : novoId(m.titulo);
+    let imagem = m.imagem && /^data:image\//.test(m.imagem) ? m.imagem : "";
+    if(!imagem && m.imagemUrl){ imagem = await imagemDeUrl(m.imagemUrl); if(!imagem) semImg.push(m.titulo); }
+    const agora=new Date().toISOString();
+    const dados={ titulo:String(m.titulo), linhaFina:m.linhaFina||"", corpo:String(m.corpo),
+      editoria: EDITORIAS[m.editoria]?m.editoria:"experiencia", tipo: m.tipo==="noticia"?"noticia":"artigo",
+      autor:m.autor||"Redação", cargoAutor:m.cargoAutor||"", tags:Array.isArray(m.tags)?m.tags:[],
+      imagem, legenda:m.legenda||"", destaque:!!m.destaque,
+      publicadoEm: m.publicadoEm && !isNaN(new Date(m.publicadoEm)) ? new Date(m.publicadoEm).toISOString() : agora };
+    dados.atualizadoEm = dados.publicadoEm;
+    try{ await API.salvar(id, m.status==="rascunho"?"rascunho":"publicado", dados); ok++; }
+    catch(e){ falhas.push(m.titulo+" ("+(e?.message||"erro")+")"); }
+  }
+  await recarregar(); render(true);
+  let msg=`${ok} matéria(s) importada(s).`;
+  if(semImg.length) msg+=`\n\nSem foto (não foi possível baixar a imagem — envie pela edição da matéria):\n- `+semImg.join("\n- ");
+  if(falhas.length) msg+=`\n\nNão importadas:\n- `+falhas.join("\n- ");
+  alert(msg);
+}
 document.addEventListener("change",async e=>{
+  if(e.target.id==="f-importar"){ const f=e.target.files[0]; e.target.value=""; if(f) await importarMaterias(f); return; }
   if(e.target.dataset && e.target.dataset.meioimg!==undefined && e.target.files[0]){
     const i=+e.target.dataset.meioimg; lerPubForm();
     try{ S.meioForm[i].imagem = await comprimir(e.target.files[0], 1400, 160000); render(); toast("Imagem carregada"); }
