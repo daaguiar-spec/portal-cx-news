@@ -447,7 +447,7 @@ function telaHome(){
   if(!todos.length) return telaVazia();
   const noticias = todos.filter(a=>a.tipo!=="artigo");
   const base = noticias.length?noticias:todos;
-  const destaques = base.filter(a=>a.destaque);
+  const destaques = todos.filter(a=>a.destaque);
   const manchete = destaques[0] || base[0];
   const secund = [...destaques.slice(1), ...base.filter(a=>!a.destaque)].filter(a=>a!==manchete).slice(0,2);
   const usados = new Set([manchete, ...secund].map(a=>a.id));
@@ -467,7 +467,7 @@ function telaHome(){
     if(++nSec===1) h += `<div class="cta-home">${blocoCTA(false)}</div>`;
   }
   if(!nSec) h += `<div class="cta-home">${blocoCTA(false)}</div>`;
-  const ops = todos.filter(a=>a.tipo==="artigo").slice(0,3);
+  const ops = todos.filter(a=>a.tipo==="artigo" && a.id!==manchete.id).slice(0,3);
   if(ops.length){
     h += `</div><section class="opiniao"><div class="wrap">${bloco("Opinião","#opiniao")}<div class="op-grid">${ops.map(a=>`<article class="op"><a href="${link(a)}"><span class="avatar">${esc(iniciais(a.autor))}</span><div><span class="kicker" data-ed="${esc(a.editoria)}" >${esc(EDITORIAS[a.editoria]?.nome||"")}</span><h3>${esc(a.titulo)}</h3><div class="autor">${esc(a.autor||"Redação")}${a.cargoAutor?" · "+esc(a.cargoAutor):""}</div></div></a></article>`).join("")}</div></div></section><div class="wrap">`;
   }
