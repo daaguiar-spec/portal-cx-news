@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CX em Foco</title>
+<title>CX inFoco | Atendimento, experiência do cliente e liderança</title>
 <meta name="description" content="Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança.">
-<meta property="og:title" content="CX em Foco">
+<meta property="og:title" content="CX inFoco">
+<meta property="og:site_name" content="CX inFoco">
 <meta property="og:description" content="Atendimento, experiência do cliente e liderança.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="/og-padrao.jpg">
@@ -370,7 +371,7 @@ const EDITORIAS = {
   lideranca:{nome:"Liderança", desc:"Gestão de times, cultura e decisões que sustentam a experiência."}
 };
 const S = {
-  artigos:[], rascunhos:[], config:{nome:"CX em Foco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
+  artigos:[], rascunhos:[], config:{nome:"CX inFoco", slogan:"Atendimento, experiência\ndo cliente e liderança", sobre:"Notícias, análises e artigos sobre atendimento, experiência do cliente e liderança."},
   carregado:false, stats:undefined, statsDias:30, statsCarregando:false, statsErro:"", editor:false, demo:false, pub:null, pubForm:null, latForm:null, meioForm:null, pubMeio:null, erroCarga:"", editandoId:null, form:null, confirmar:null, busca:"", prev:false
 };
 
@@ -567,14 +568,14 @@ O {nome} é editado por **Daniel Donato**, palestrante, mentor e especialista em
 
 Sugestões de pauta, correções e parcerias: [{email}](mailto:{email}).`;
 function emailContato(){ return S.config.emailContato || "comercial@sinapseonline.com"; }
-function preencher(t){ const n=S.config.nome||"CX em Foco"; return t.replace(/\{nome\}/g,n).replace(/\{email\}/g,emailContato()); }
+function preencher(t){ const n=S.config.nome||"CX inFoco"; return t.replace(/\{nome\}/g,n).replace(/\{email\}/g,emailContato()); }
 function telaSobre(){
-  const n=S.config.nome||"CX em Foco";
+  const n=S.config.nome||"CX inFoco";
   return `<article class="materia pagina"><span class="kicker">Institucional</span><h1>Sobre o ${esc(n)}</h1>
     <div class="corpo">${corpoHTML(preencher(S.config.paginaSobre||SOBRE_PADRAO))}</div>${blocoCTA(false)}</article>`;
 }
 function telaPrivacidade(){
-  const n=S.config.nome||"CX em Foco", em=emailContato();
+  const n=S.config.nome||"CX inFoco", em=emailContato();
   const t = `Esta política explica, de forma simples, quais dados o {nome} trata quando você visita o portal, com que finalidade e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, LGPD).
 
 ## Quem é o responsável
@@ -735,7 +736,7 @@ function irPara(r){
   history.pushState(null,"",url); aoMudarRota();
 }
 function renderShell(){
-  const c=S.config, n=c.nome||"CX em Foco";
+  const c=S.config, n=c.nome||"CX inFoco";
   const mi=n.match(/^([A-Z]{2,4})(\s.+)$/), mf=n.match(/^(.+?)\s?([A-Z]{2,4})$/);
   const logo = mi ? `<span>${esc(mi[1])}</span>${esc(mi[2])}` : mf ? `${esc(mf[1])}<span>${esc(mf[2])}</span>` : esc(n);
   $("#logo-nome").innerHTML=logo; $("#rodape-nome").innerHTML=logo.replace("<span>",'<span style="color:var(--accent)">');
@@ -776,9 +777,9 @@ function render(scrollTop){
   else h=telaHome();
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
-  if(r==="sobre") document.title="Sobre | "+(S.config.nome||"CX em Foco");
-  if(r==="privacidade") document.title="Política de Privacidade | "+(S.config.nome||"CX em Foco");
-  if(r.startsWith("m-")){ const am=[...S.artigos,...S.rascunhos].find(x=>x.id===r.slice(2)); if(am) document.title = am.titulo+" | "+(S.config.nome||"CX em Foco"); }
+  if(r==="sobre") document.title="Sobre | "+(S.config.nome||"CX inFoco");
+  if(r==="privacidade") document.title="Política de Privacidade | "+(S.config.nome||"CX inFoco");
+  if(r.startsWith("m-")){ const am=[...S.artigos,...S.rascunhos].find(x=>x.id===r.slice(2)); if(am) document.title = am.titulo+" | "+(S.config.nome||"CX inFoco"); }
   iniciarCarrossel();
   observarCTA();
   ajustarMais();
@@ -1010,7 +1011,7 @@ document.addEventListener("change",async e=>{
   catch{ toast("Não foi possível ler essa imagem. Tente um JPG ou PNG."); }
 });
 async function salvarConfig(){
-  const c={...S.config, nome:$("#c-nome").value.trim()||"CX em Foco",slogan:$("#c-slogan").value.trim(),sobre:$("#c-sobre").value.trim(),autorPadrao:$("#c-autor").value.trim(),
+  const c={...S.config, nome:$("#c-nome").value.trim()||"CX inFoco",slogan:$("#c-slogan").value.trim(),sobre:$("#c-sobre").value.trim(),autorPadrao:$("#c-autor").value.trim(),
     emailContato:$("#c-email").value.trim(), paginaSobre:$("#c-pagsobre").value.trim(),
     cta:{ativo:$("#c-cta-ativo").checked, titulo:$("#c-cta-titulo").value.trim(), texto:$("#c-cta-texto").value.trim(), botao:$("#c-cta-botao").value.trim(), link:$("#c-cta-link").value.trim(), imagem:S.ctaImg||""}};
   try{ await API.salvarConfig(c); S.config={...S.config,...c}; renderShell(); toast("Configurações salvas"); }
