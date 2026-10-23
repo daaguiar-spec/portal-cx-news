@@ -45,8 +45,8 @@ function textoPlano(txt, max = 160) {
 async function nomeSite() {
   try {
     const c = await supa("config?id=eq.site&select=dados");
-    return (c[0] && c[0].dados && c[0].dados.nome) || "CX em Foco";
-  } catch { return "CX em Foco"; }
+    return (c[0] && c[0].dados && c[0].dados.nome) || "CX inFoco";
+  } catch { return "CX inFoco"; }
 }
 
 module.exports = { supa, origem, esc, corpoHTML, textoPlano, nomeSite, EDITORIAS };
