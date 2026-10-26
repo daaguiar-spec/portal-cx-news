@@ -864,6 +864,7 @@ function telaRedacaoForm(){
         <div class="campo"><label for="f-tipo">Tipo</label><select id="f-tipo"><option value="noticia" ${f.tipo!=="artigo"?"selected":""}>Notícia</option><option value="artigo" ${f.tipo==="artigo"?"selected":""}>Artigo / Opinião</option></select></div>
       </div>
       <label class="check"><input type="checkbox" id="f-destaque" ${f.destaque?"checked":""}> Destaque na capa (manchete)</label>
+      <label class="check"><input type="checkbox" id="f-site-daniel" ${f.siteDaniel?"checked":""}> Publicar também no site do Daniel Donato <small style="display:block;font-weight:400;opacity:.75;margin-top:2px">Aparece em danieldonato.com.br/blog e o Google passa a mostrar a matéria pelo site do Daniel.</small></label>
       <div class="campo"><label for="f-data">Data de publicação</label><input type="datetime-local" id="f-data" value="${esc(localISO(f.publicadoEm))}"><small>Data futura = matéria agendada (só aparece aos leitores na hora marcada).</small></div>
       <div class="erro" id="f-erro" hidden style="color:var(--danger);font-size:13px;font-weight:600"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="f-salvar">${S.editandoId?"Salvar alterações":"Publicar"}</button><button type="button" class="btn" data-acao="previa">${S.prev?"Fechar prévia":"Prévia"}</button><a class="btn" href="/#redacao">Cancelar</a></div>
@@ -990,7 +991,7 @@ function abrirForm(id){
 function lerForm(){
   const f=S.form; const v=id=>$(id)?.value ?? "";
   Object.assign(f,{titulo:v("#f-titulo").trim(),linhaFina:v("#f-fina").trim(),corpo:v("#f-corpo"),editoria:v("#f-editoria"),tipo:v("#f-tipo"),
-    autor:v("#f-autor").trim(),cargoAutor:v("#f-cargo").trim(),legenda:v("#f-legenda").trim(),status:v("#f-status"),destaque:$("#f-destaque")?.checked||false,
+    autor:v("#f-autor").trim(),cargoAutor:v("#f-cargo").trim(),legenda:v("#f-legenda").trim(),status:v("#f-status"),destaque:$("#f-destaque")?.checked||false,siteDaniel:$("#f-site-daniel")?.checked||false,
     tags:v("#f-tags").split(",").map(t=>t.trim()).filter(Boolean), url:v("#f-url").trim()});
   const d=new Date(v("#f-data")); f.publicadoEm = isNaN(d)?new Date().toISOString():d.toISOString();
   return f;

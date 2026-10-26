@@ -27,6 +27,7 @@ module.exports = async (req, res) => {
     } else {
       const d = m.dados || {};
       const url = `${base}/materia/${encodeURIComponent(m.id)}`;
+      const canon = d.siteDaniel ? `https://www.danieldonato.com.br/blog/${encodeURIComponent(m.id)}` : url;
       const desc = d.linhaFina || textoPlano(d.corpo);
       const img = d.imagem ? `${base}/api/imagem?id=${encodeURIComponent(m.id)}` : `${base}/og-padrao.jpg`;
       const ld = {
@@ -34,12 +35,12 @@ module.exports = async (req, res) => {
         headline: d.titulo, description: desc, image: [img], datePublished: m.publicado_em,
         dateModified: d.atualizadoEm || m.atualizado_em || m.publicado_em,
         author: [{ "@type": "Person", name: d.autor || "Redação" }],
-        publisher: { "@type": "Organization", name: site }, mainEntityOfPage: url,
+        publisher: { "@type": "Organization", name: site }, mainEntityOfPage: canon,
         articleSection: EDITORIAS[d.editoria] || "", keywords: (d.tags || []).join(", ")
       };
       head = `<title>${esc(d.titulo)} | ${esc(site)}</title>
 <meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${esc(url)}">
+<link rel="canonical" href="${esc(canon)}">
 <meta property="og:site_name" content="${esc(site)}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${esc(d.titulo)}">
