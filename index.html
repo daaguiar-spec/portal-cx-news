@@ -275,6 +275,37 @@ td.acoes .btn{margin-left:4px}
 .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.03em}
 .pill.pub{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
 .pill.ras{background:var(--warn-bg);color:var(--c-li)}
+.pill.pend{background:var(--warn-bg);color:#9A5B00}
+.pill.rec{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--danger);color:#fff;font-size:11px;font-weight:800;line-height:1;margin-left:6px;vertical-align:1px}
+.util-link{font-size:12px;font-weight:600;color:var(--accent);margin-right:12px}
+.util-link:hover{text-decoration:underline}
+img.avatar{object-fit:cover;padding:0}
+.env-wrap{max-width:760px;margin:0 auto}
+.env-wrap h1{font-size:clamp(30px,4.2vw,44px);line-height:1.08;margin:10px 0 12px}
+.env-intro{font-family:var(--f-display);font-size:20px;line-height:1.45;color:var(--ink-2);margin:0 0 22px}
+.normas{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:18px 22px;margin:0 0 26px}
+.normas h2{font-size:20px;margin:0 0 8px}
+.normas ul{margin:0;padding-left:1.2em;color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.env-form h2.sec{font-size:22px;margin:8px 0 2px}
+.env-form .dupla{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.env-form small{color:var(--muted);font-size:12.5px}
+.env-form textarea.texto{min-height:340px;font-family:var(--f-display);font-size:17px;line-height:1.6}
+.env-form .aceite{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--ink)}
+.env-form .aceite input{margin-top:3px;width:auto;flex:none}
+.env-img{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#env-prev-foto:empty,#env-prev-imagem:empty{display:none}
+.env-img img{max-height:90px;border-radius:4px;border:1px solid var(--line)}
+.env-img img.redonda{width:72px;height:72px;object-fit:cover;border-radius:50%}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.env-ok{text-align:center}
+.env-ok .ico{width:64px;height:64px;border-radius:50%;background:color-mix(in srgb,var(--ok) 14%,transparent);display:grid;place-items:center;margin:0 auto 16px}
+.env-autor{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.env-autor .avatar{width:64px;height:64px}
+.env-acoes{position:sticky;top:12px}
+.env-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+.env-prev{border:1px dashed var(--line);border-radius:6px;padding:26px 22px}
+@media (max-width:900px){ .env-grid{grid-template-columns:minmax(0,1fr)} .env-acoes{position:static} .env-form .dupla{grid-template-columns:1fr} }
 .star{background:none;border:0;font-size:18px;line-height:1;color:var(--line);padding:2px 4px}
 .star.on{color:var(--c-li)}
 .form-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;align-items:start}
@@ -494,10 +525,12 @@ function telaBusca(){
   <form class="busca-grande" id="form-busca"><input id="busca-campo" type="search" value="${esc(S.busca)}" placeholder="Palavra-chave, tema ou autor" aria-label="Buscar"><button class="btn pri">Buscar</button></form></header>
   ${q?`<p class="meta" style="font-size:14px">${res.length} resultado${res.length===1?"":"s"} para “${esc(S.busca)}”</p>${listaSecao(res)}`:""}`;
 }
+const imgOk = u => typeof u==="string" && /^data:image\/(jpeg|png|webp|gif);base64,/.test(u);
+function avatarHTML(a){ return imgOk(a.fotoAutor) ? `<img class="avatar" src="${a.fotoAutor}" alt="">` : `<span class="avatar">${esc(iniciais(a.autor))}</span>`; }
 function artigoHTML(a){
   return `<article class="materia" data-ed="${esc(a.editoria)}">
     ${kicker(a)}<h1>${esc(a.titulo)}</h1>${a.linhaFina?`<p class="fina">${esc(a.linhaFina)}</p>`:""}
-    <div class="byline"><span class="avatar">${esc(iniciais(a.autor))}</span><div><strong>${esc(a.autor||"Redação")}</strong><span class="meta">${a.cargoAutor?esc(a.cargoAutor)+" · ":""}${esc(quando(a.publicadoEm))}${a.atualizadoEm&&a.atualizadoEm!==a.publicadoEm&&new Date(a.atualizadoEm)-new Date(a.publicadoEm)>3600000?" · atualizado "+esc(quando(a.atualizadoEm)):""} · ${leitura(a.corpo)} min de leitura</span></div></div>
+    <div class="byline">${avatarHTML(a)}<div><strong>${esc(a.autor||"Redação")}</strong><span class="meta">${a.cargoAutor?esc(a.cargoAutor)+" · ":""}${esc(quando(a.publicadoEm))}${a.atualizadoEm&&a.atualizadoEm!==a.publicadoEm&&new Date(a.atualizadoEm)-new Date(a.publicadoEm)>3600000?" · atualizado "+esc(quando(a.atualizadoEm)):""} · ${leitura(a.corpo)} min de leitura</span></div></div>
     ${capa(a)}${a.legenda?`<p class="legenda">${esc(a.legenda)}</p>`:`<div style="height:26px"></div>`}
     <div class="corpo">${corpoHTML(a.corpo)}</div>
     ${a.id?`<div class="compart"><span>Compartilhe</span>
@@ -519,6 +552,153 @@ function telaMateria(id){
   ${artigoHTML(a)}
   ${S.rascunhos.includes(a)?"":`<div class="materia">${blocoCTA(false)}</div>`}
   ${[...rel,...extra].length?`<section class="leia">${bloco("Leia também")}<div class="grade3">${[...rel,...extra].map(x=>card(x)).join("")}</div></section>`:""}`;
+}
+
+/* ---------- envio de artigos por leitores ---------- */
+const nPend = () => (S.envios||[]).filter(x=>x.status==="pendente").length;
+function envFormNovo(){ return {nome:"",cargo:"",email:"",whatsapp:"",bio:"",foto:"",titulo:"",resumo:"",editoria:"experiencia",corpo:"",imagem:"",inicio:Date.now(),enviado:false}; }
+function telaEnviar(){
+  if(!S.envForm) S.envForm=envFormNovo();
+  const f=S.envForm, n=S.config.nome||"CX inFoco";
+  if(f.enviado) return `<div class="env-wrap"><div class="vazio env-ok"><div class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2>Artigo enviado!</h2><p style="font-size:17px;line-height:1.5;margin:0 0 22px">Recebemos seu artigo. Ele será analisado pela nossa equipe e publicado após aprovação.</p>
+    <a class="btn pri" href="/">Voltar à capa</a></div></div>`;
+  const ed = Object.entries(EDITORIAS).map(([k,e])=>`<option value="${k}" ${f.editoria===k?"selected":""}>${esc(e.nome)}</option>`).join("");
+  const prevImg = (campo) => f[campo] ? `<img ${campo==="foto"?'class="redonda"':""} src="${f[campo]}" alt=""><button type="button" class="btn pequeno perigo" data-acao="env-tirar" data-campo="${campo}">Remover</button>` : "";
+  return `<div class="env-wrap"><span class="kicker">Colabore</span><h1>Escreva para o ${esc(n)}</h1>
+  <p class="env-intro">Tem algo a dizer sobre atendimento, experiência do cliente ou liderança? Envie seu artigo. Todos os textos são lidos pela nossa equipe e publicados após aprovação.</p>
+  <div class="normas"><h2>Antes de enviar</h2><ul>
+    <li>O texto deve ser <b>inédito e de sua autoria</b>.</li>
+    <li>Temas: atendimento, experiência do cliente, liderança, cultura de serviço e assuntos relacionados.</li>
+    <li>Tamanho recomendado: de 3 a 12 parágrafos.</li>
+    <li>Sem propaganda direta de produtos ou serviços. Sua empresa pode aparecer na mini-bio.</li>
+    <li>Use apenas imagens suas ou com direito de uso.</li>
+    <li>A equipe pode fazer ajustes de revisão e formatação. Nem todos os textos são publicados.</li>
+  </ul></div>
+  <form id="form-envio" class="painel env-form" novalidate>
+    <h2 class="sec">Sobre você</h2>
+    <div class="dupla"><div class="campo"><label for="env-nome">Nome completo *</label><input id="env-nome" value="${esc(f.nome)}" maxlength="120" autocomplete="name"></div>
+      <div class="campo"><label for="env-cargo">Cargo e empresa</label><input id="env-cargo" value="${esc(f.cargo)}" maxlength="160" placeholder="Ex.: Gerente de Atendimento na Empresa X"></div></div>
+    <div class="dupla"><div class="campo"><label for="env-email">E-mail *</label><input id="env-email" type="email" value="${esc(f.email)}" maxlength="200" autocomplete="email"><small>Não aparece no site. Usado só para contato sobre o artigo.</small></div>
+      <div class="campo"><label for="env-whats">WhatsApp</label><input id="env-whats" value="${esc(f.whatsapp)}" maxlength="40" placeholder="(00) 00000-0000" autocomplete="tel"><small>Opcional. Também não aparece no site.</small></div></div>
+    <div class="campo"><label for="env-bio">Mini-bio</label><textarea id="env-bio" class="fina" maxlength="400" style="min-height:70px" placeholder="Duas ou três linhas sobre você. Aparece no fim do artigo, se publicado.">${esc(f.bio)}</textarea></div>
+    <div class="campo"><label>Sua foto (opcional)</label><div class="env-img"><span id="env-prev-foto" class="env-img">${prevImg("foto")}</span><label class="btn pequeno" for="env-foto" style="cursor:pointer">Escolher foto</label><input type="file" id="env-foto" accept="image/*" hidden></div></div>
+    <h2 class="sec" style="margin-top:14px">Seu artigo</h2>
+    <div class="campo"><label for="env-titulo">Título *</label><input id="env-titulo" class="titulo" value="${esc(f.titulo)}" maxlength="250"></div>
+    <div class="campo"><label for="env-resumo">Resumo (opcional)</label><textarea id="env-resumo" class="fina" maxlength="300" style="min-height:60px" placeholder="Uma ou duas frases que aparecem abaixo do título.">${esc(f.resumo)}</textarea></div>
+    <div class="campo"><label for="env-editoria">Tema principal</label><select id="env-editoria">${ed}</select></div>
+    <div class="campo"><label for="env-corpo">Texto *</label><textarea id="env-corpo" class="texto" maxlength="60000">${esc(f.corpo)}</textarea>
+      <small>Deixe uma linha em branco entre os parágrafos. Se quiser, use <b>## Subtítulo</b> para intertítulos e <b>**negrito**</b> para destacar trechos.</small></div>
+    <div class="campo"><label>Imagem de capa (opcional)</label><div class="env-img"><span id="env-prev-imagem" class="env-img">${prevImg("imagem")}</span><label class="btn pequeno" for="env-imagem" style="cursor:pointer">Escolher imagem</label><input type="file" id="env-imagem" accept="image/*" hidden></div><small>De preferência horizontal. Se não enviar, a equipe escolhe uma.</small></div>
+    <div class="hp" aria-hidden="true"><label for="env-site">Não preencha este campo</label><input id="env-site" tabindex="-1" autocomplete="off"></div>
+    <label class="aceite"><input type="checkbox" id="env-aceite1"> <span>Declaro que o texto é <b>inédito e de minha autoria</b> e autorizo o ${esc(n)} a publicá-lo, com possíveis ajustes de revisão, citando meu nome como autor.</span></label>
+    <label class="aceite"><input type="checkbox" id="env-aceite2"> <span>Concordo com o uso dos meus dados para análise e contato sobre este artigo, conforme a <a href="/privacidade" target="_blank" style="color:var(--accent);text-decoration:underline">Política de Privacidade</a>.</span></label>
+    <div id="env-erro" hidden style="color:var(--danger);font-size:14px;font-weight:600"></div>
+    <div><button class="btn pri" id="env-botao" style="font-size:15px;padding:11px 22px">Enviar artigo</button></div>
+  </form></div>`;
+}
+function lerEnvForm(){
+  const f=S.envForm, v=id=>($(id)?.value ?? "");
+  Object.assign(f,{nome:v("#env-nome").trim(),cargo:v("#env-cargo").trim(),email:v("#env-email").trim(),whatsapp:v("#env-whats").trim(),bio:v("#env-bio").trim(),
+    titulo:v("#env-titulo").trim(),resumo:v("#env-resumo").trim(),editoria:v("#env-editoria"),corpo:v("#env-corpo").replace(/\r/g,"").trim()});
+}
+async function enviarArtigo(){
+  lerEnvForm(); const f=S.envForm, erro=$("#env-erro"), b=$("#env-botao");
+  const falha = m => { erro.textContent=m; erro.hidden=false; erro.scrollIntoView({block:"center",behavior:"smooth"}); };
+  erro.hidden=true;
+  if($("#env-site").value) return; // robô
+  if(f.nome.length<2) return falha("Informe seu nome.");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return falha("Informe um e-mail válido.");
+  if(f.titulo.length<5) return falha("Informe o título do artigo.");
+  if(f.corpo.length<800) return falha("O texto está muito curto. Envie um artigo com pelo menos alguns parágrafos.");
+  if(!$("#env-aceite1").checked || !$("#env-aceite2").checked) return falha("Para enviar, marque as duas caixas de confirmação.");
+  if(Date.now()-f.inicio < 4000) return falha("Aguarde alguns segundos e tente novamente.");
+  b.disabled=true; b.textContent="Enviando…";
+  try{
+    await API.enviarArtigo({nome:f.nome,cargo:f.cargo||null,email:f.email,whatsapp:f.whatsapp||null,bio:f.bio||null,foto:f.foto||null,
+      titulo:f.titulo,resumo:f.resumo||null,corpo:f.corpo,imagem:f.imagem||null,editoria:f.editoria,aceite_autoria:true,aceite_lgpd:true});
+    f.enviado=true; render(true);
+  }catch(e){
+    b.disabled=false; b.textContent="Enviar artigo";
+    const m=String(e?.message||"");
+    falha(/Muitos envios|recentemente/.test(m) ? m : /row-level|violates/i.test(m) ? "Não foi possível enviar. Confira se todos os campos obrigatórios estão preenchidos." : "Não foi possível enviar agora. Verifique sua conexão e tente novamente.");
+  }
+}
+function telaRedacaoEnvios(){
+  if(S.enviosErro==="tabela") return abas("envios") + `<div class="aviso">Falta ativar o envio de artigos no banco de dados: rode o arquivo <b>supabase-envios.sql</b> no SQL Editor do Supabase.</div>`;
+  const filtro=S.enviosFiltro||"pendente", todos=S.envios||[];
+  const l = filtro==="todos" ? todos : todos.filter(x=>x.status===filtro);
+  const cont = k => todos.filter(x=>x.status===k).length;
+  const bt=(k,t)=>`<button class="btn pequeno ${filtro===k?"pri":""}" data-acao="envios-filtro" data-f="${k}">${t}</button>`;
+  return abas("envios") + `<p class="meta" style="font-size:14px;margin:0 0 14px">Artigos enviados pela página <a href="/enviar" target="_blank" style="color:var(--accent)">${esc(location.host)}/enviar</a>. Nada é publicado sem a sua aprovação.</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${bt("pendente",`Aguardando (${cont("pendente")})`)}${bt("aprovado",`Aprovados (${cont("aprovado")})`)}${bt("recusado",`Recusados (${cont("recusado")})`)}${bt("todos","Todos")}</div>
+  ${l.length?`<div class="tabela-wrap"><table><thead><tr><th>Título</th><th>Autor</th><th>Status</th><th>Recebido</th><th></th></tr></thead><tbody>
+  ${l.map(x=>`<tr><td class="tit"><a href="#" data-envio="${esc(x.id)}">${esc(x.titulo)}</a></td><td>${esc(x.nome)}${x.cargo?`<div class="meta">${esc(x.cargo)}</div>`:""}</td>
+    <td>${pillEnvio(x.status)}</td><td class="meta">${new Date(x.criado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})}</td>
+    <td class="acoes"><button class="btn pequeno ${x.status==="pendente"?"pri":""}" data-envio="${esc(x.id)}">${x.status==="pendente"?"Analisar":"Abrir"}</button></td></tr>`).join("")}</tbody></table></div>`
+  :`<div class="vazio"><h2>${filtro==="pendente"?"Nenhum artigo aguardando":"Nada por aqui"}</h2><p>Quando alguém enviar um artigo pela página “Envie seu artigo”, ele aparece aqui.</p></div>`}`;
+}
+const pillEnvio = st => st==="pendente"?`<span class="pill pend">Aguardando</span>`:st==="aprovado"?`<span class="pill pub">Aprovado</span>`:`<span class="pill rec">Recusado</span>`;
+async function abrirEnvio(id){
+  S.envioId=id; S.envioAtual=null; S.confirmar=null;
+  if(rota()==="redacao-envio") render(true); else irPara("redacao-envio");
+  try{ S.envioAtual=await API.lerEnvio(id); }catch(e){ S.envioAtual={erro:String(e?.message||"erro")}; }
+  if(rota()==="redacao-envio") render();
+}
+function materiaDoEnvio(e, editoria, tipo){
+  const sobre = e.bio ? `\n\n## Sobre o autor\n\n**${e.nome}**${e.cargo?", "+e.cargo:""}. ${e.bio}` : "";
+  return { titulo:e.titulo, linhaFina:e.resumo||"", corpo:e.corpo+sobre, editoria:EDITORIAS[editoria]?editoria:"experiencia", tipo:tipo||"artigo",
+    autor:e.nome, cargoAutor:e.cargo||"", tags:["Colaborador"], imagem:imgOk(e.imagem)?e.imagem:"", legenda:"", destaque:false,
+    fotoAutor:imgOk(e.foto)?e.foto:"", colaborador:true, publicadoEm:new Date().toISOString(), atualizadoEm:new Date().toISOString() };
+}
+function telaRedacaoEnvio(){
+  if(!S.envioId) return telaRedacaoEnvios();
+  const e=S.envioAtual;
+  if(!e) return abas("envios") + `<p class="meta" style="font-size:15px">Carregando envio…</p>`;
+  if(e.erro) return abas("envios") + `<div class="aviso">Não foi possível abrir este envio. (${esc(e.erro)})</div>`;
+  const prev = materiaDoEnvio(e, e.editoria, "artigo");
+  const ed = Object.entries(EDITORIAS).map(([k,x])=>`<option value="${k}" ${e.editoria===k?"selected":""}>${esc(x.nome)}</option>`).join("");
+  const wa = (e.whatsapp||"").replace(/\D/g,"");
+  const acoes = e.status==="pendente" ? `
+      <div class="campo"><label for="ev-editoria">Editoria</label><select id="ev-editoria">${ed}</select></div>
+      <div class="campo"><label for="ev-tipo">Tipo</label><select id="ev-tipo"><option value="artigo">Artigo / Opinião</option><option value="noticia">Notícia</option></select></div>
+      <button class="btn pri" data-acao="envio-publicar" style="justify-content:center">Aprovar e publicar</button>
+      <button class="btn" data-acao="envio-rascunho" style="justify-content:center">Aprovar como rascunho</button>
+      <small class="meta">Como rascunho, a matéria abre no editor para você revisar antes de publicar.</small>
+      <button class="btn perigo" data-acao="envio-recusar" style="justify-content:center">Recusar</button>`
+    : e.status==="aprovado" ? `<p style="margin:0">Aprovado${e.analisado_em?" em "+esc(new Date(e.analisado_em).toLocaleDateString("pt-BR")):""}.</p>${e.materia_id?`<a class="btn pri" href="/materia/${encodeURIComponent(e.materia_id)}" style="justify-content:center">Ver matéria</a>`:""}`
+    : `<p style="margin:0">Recusado${e.analisado_em?" em "+esc(new Date(e.analisado_em).toLocaleDateString("pt-BR")):""}.</p><button class="btn" data-acao="envio-reabrir" style="justify-content:center">Voltar para “Aguardando”</button>`;
+  return abas("envios") + `<a class="voltar" href="/#redacao-envios">← Envios de leitores</a>
+  <div class="env-grid" style="margin-top:14px"><div>
+    <div class="painel" style="margin-bottom:22px"><div class="env-autor">${imgOk(e.foto)?`<img class="avatar" src="${e.foto}" alt="">`:`<span class="avatar">${esc(iniciais(e.nome))}</span>`}
+      <div><strong style="font-size:17px">${esc(e.nome)}</strong>${e.cargo?`<div class="meta" style="font-size:13.5px">${esc(e.cargo)}</div>`:""}
+      ${e.bio?`<p style="margin:8px 0 0;font-size:14px;color:var(--ink-2)">${esc(e.bio)}</p>`:""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a class="btn pequeno" href="mailto:${esc(e.email)}?subject=${encodeURIComponent("Seu artigo: "+e.titulo)}" target="_blank" rel="noopener">✉ ${esc(e.email)}</a>${wa?`<a class="btn pequeno" href="https://wa.me/${wa.length<=11?"55"+wa:wa}" target="_blank" rel="noopener">WhatsApp ${esc(e.whatsapp)}</a>`:""}</div>
+      <div class="meta" style="margin-top:8px">Recebido em ${esc(new Date(e.criado_em).toLocaleString("pt-BR"))} · ${pillEnvio(e.status)}</div></div></div></div>
+    <div class="env-prev"><div class="kicker" style="color:var(--muted);margin-bottom:12px">Prévia de como ficará no site</div>${artigoHTML({...prev, id:""})}</div>
+  </div>
+  <aside class="painel env-acoes"><strong style="font-size:16px">Decisão</strong>${acoes}
+    <hr style="border:0;border-top:1px solid var(--line);margin:4px 0">
+    ${S.confirmar==="envio"?`<button class="btn perigo pequeno" data-acao="envio-excluir">Confirmar exclusão definitiva</button><button class="btn pequeno" data-acao="cancelar">Cancelar</button>`:`<button class="btn pequeno perigo" data-acao="envio-excluir-pedir">Excluir envio</button>`}
+    <small class="meta">Dica: antes de aprovar, cole um trecho do texto no Google entre aspas para conferir se ele não foi copiado de outro site.</small>
+  </aside></div>`;
+}
+async function aprovarEnvio(status, botao){
+  const e=S.envioAtual; if(!e) return;
+  botao.disabled=true; botao.textContent="Salvando…";
+  try{
+    const dados=materiaDoEnvio(e, $("#ev-editoria").value, $("#ev-tipo").value);
+    const id=novoId(e.titulo);
+    await API.salvar(id, status, dados);
+    await API.atualizarEnvio(e.id, {status:"aprovado", materia_id:id, analisado_em:new Date().toISOString()});
+    await recarregar(); await carregarEnvios();
+    if(status==="publicado"){ toast("Artigo aprovado e publicado"); irPara("m-"+id); }
+    else { toast("Aprovado como rascunho. Revise e publique."); abrirForm(id); irPara("redacao-editar"); }
+  }catch(err){ botao.disabled=false; botao.textContent="Tentar de novo"; toast("Não foi possível aprovar: "+(err?.message||"")); }
+}
+async function mudarEnvio(c, msg){
+  try{ await API.atualizarEnvio(S.envioAtual.id, c); S.envioAtual={...S.envioAtual,...c}; await carregarEnvios(); toast(msg); render(); }
+  catch(err){ toast("Não foi possível salvar: "+(err?.message||"")); }
 }
 
 /* ---------- quadro de palestras ---------- */
@@ -584,7 +764,7 @@ O {nome} é editado por Daniel Donato. Para qualquer assunto sobre privacidade e
 
 ## Quais dados coletamos
 
-Para ler as matérias, **você não precisa se cadastrar** nem informar nome, e-mail ou telefone.
+Para ler as matérias, **você não precisa se cadastrar** nem informar nome, e-mail ou telefone. Esses dados só são pedidos se você decidir enviar um artigo (veja abaixo).
 
 Para entender como o portal é usado e melhorar o conteúdo, registramos estatísticas de acesso de forma **anônima**:
 
@@ -594,7 +774,15 @@ Para entender como o portal é usado e melhorar o conteúdo, registramos estatí
 - um código aleatório guardado no seu navegador, que serve apenas para contar visitantes únicos e não identifica quem você é;
 - quando você vê ou clica em um anúncio, no quadro de palestras ou em um botão de compartilhar.
 
-**Não** coletamos seu nome, e-mail, telefone ou localização, e **não** usamos esses dados para traçar perfil de publicidade.
+Nessas estatísticas **não** registramos nome, e-mail, telefone ou localização, e **não** usamos esses dados para traçar perfil de publicidade.
+
+## Envio de artigos
+
+Quem envia um artigo pela página "Envie seu artigo" informa nome, e-mail e, se quiser, cargo, WhatsApp, mini-bio e foto. Esses dados são usados para analisar o texto e entrar em contato sobre ele.
+
+- Se o artigo for **aprovado**, o nome, o cargo, a mini-bio e a foto aparecem junto com o texto publicado.
+- O **e-mail e o WhatsApp nunca são publicados** e são vistos apenas pela equipe editorial.
+- Se o artigo não for aprovado, os dados podem ser excluídos a qualquer momento, inclusive a seu pedido, pelo e-mail [{email}](mailto:{email}).
 
 ## Armazenamento no navegador
 
@@ -636,12 +824,12 @@ Esta política pode ser atualizada quando o portal ganhar novos recursos. A data
 /* ---------- redação ---------- */
 function abas(on){
   return `<div class="redacao-top"><div><span class="kicker">Área restrita</span><h1>Redação</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" for="f-importar" style="cursor:pointer" title="Cadastrar várias matérias de uma vez a partir de um arquivo .json">Importar matérias</label><input type="file" id="f-importar" accept=".json,application/json" hidden><a class="btn pri" href="/#redacao-nova">+ Nova matéria</a></div></div>
-  <nav class="abas"><a href="/#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="/#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="/#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="/#redacao-stats" class="${on==="stats"?"on":""}">Estatísticas</a><a href="/#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
+  <nav class="abas"><a href="/#redacao" class="${on==="lista"?"on":""}">Matérias</a><a href="/#redacao-envios" class="${on==="envios"?"on":""}">Envios de leitores${nPend()?`<span class="badge">${nPend()}</span>`:""}</a><a href="/#redacao-nova" class="${on==="form"&&!S.editandoId?"on":""}">${S.editandoId&&on==="form"?"Editando":"Nova matéria"}</a>${S.editandoId&&on==="form"?`<a class="on">Editando</a>`:""}<a href="/#redacao-pub" class="${on==="pub"?"on":""}">Publicidade</a><a href="/#redacao-stats" class="${on==="stats"?"on":""}">Estatísticas</a><a href="/#redacao-config" class="${on==="config"?"on":""}">Configurações do site</a></nav>`;
 }
 function telaRedacaoLista(){
   const linhas = [...S.rascunhos.map(a=>({...a,_st:"ras"})), ...ordenar(S.artigos).map(a=>({...a,_st:"pub"}))];
   const nEx = [...S.artigos,...S.rascunhos].filter(a=>a.exemplo).length;
-  return abas("lista") + (nEx?`<div class="aviso" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span>${nEx} matérias de exemplo estão no ar para mostrar o layout. Apague quando publicar as suas.</span>${S.confirmar==="exemplos"?`<span><button class="btn pequeno perigo" data-acao="apagar-exemplos">Confirmar exclusão dos exemplos</button> <button class="btn pequeno" data-acao="cancelar">Cancelar</button></span>`:`<button class="btn pequeno perigo" data-acao="pedir-exemplos">Apagar exemplos</button>`}</div>`:"") +
+  return abas("lista") + (nPend()?`<div class="aviso" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--accent-soft)"><span><b>${nPend()===1?"1 artigo enviado por leitor aguarda":nPend()+" artigos enviados por leitores aguardam"} sua aprovação.</b></span><a class="btn pequeno pri" href="/#redacao-envios">Ver envios</a></div>`:"") + (nEx?`<div class="aviso" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span>${nEx} matérias de exemplo estão no ar para mostrar o layout. Apague quando publicar as suas.</span>${S.confirmar==="exemplos"?`<span><button class="btn pequeno perigo" data-acao="apagar-exemplos">Confirmar exclusão dos exemplos</button> <button class="btn pequeno" data-acao="cancelar">Cancelar</button></span>`:`<button class="btn pequeno perigo" data-acao="pedir-exemplos">Apagar exemplos</button>`}</div>`:"") +
   (linhas.length?`<div class="tabela-wrap"><table><thead><tr><th title="Destaque na capa">★</th><th>Título</th><th>Editoria</th><th>Tipo</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody>
   ${linhas.map(a=>`<tr>
     <td>${a._st==="pub"?`<button class="star ${a.destaque?"on":""}" data-destaque="${esc(a.id)}" aria-label="${a.destaque?"Tirar do destaque":"Pôr em destaque"}" title="${a.destaque?"Em destaque na capa":"Pôr em destaque na capa"}">★</button>`:""}</td>
@@ -728,11 +916,11 @@ function telaRedacaoConfig(){
 function rota(){
   const m=location.pathname.match(/^\/materia\/([^\/?#]+)/);
   if(m) return "m-"+decodeURIComponent(m[1]);
-  if(/^\/(sobre|privacidade)\/?$/.test(location.pathname)) return location.pathname.replace(/\//g,"");
+  if(/^\/(sobre|privacidade|enviar)\/?$/.test(location.pathname)) return location.pathname.replace(/\//g,"");
   return decodeURIComponent(location.hash.replace(/^#/,""));
 }
 function irPara(r){
-  const url = r.startsWith("m-") ? "/materia/"+encodeURIComponent(r.slice(2)) : (r==="sobre"||r==="privacidade") ? "/"+r : (r ? "/#"+r : "/");
+  const url = r.startsWith("m-") ? "/materia/"+encodeURIComponent(r.slice(2)) : (r==="sobre"||r==="privacidade"||r==="enviar") ? "/"+r : (r ? "/#"+r : "/");
   history.pushState(null,"",url); aoMudarRota();
 }
 function renderShell(){
@@ -743,12 +931,12 @@ function renderShell(){
   $("#slogan").textContent=c.slogan||""; $("#rodape-sobre").textContent=c.sobre||"";
   document.title = n;
   $("#hoje").textContent = dataLonga(new Date()).replace(/^./,x=>x.toUpperCase());
-  $("#util-dir").innerHTML = `<a class="util-btn" href="/#redacao"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Redação</a>${S.editor&&!S.demo?` <button data-acao="sair">Sair</button>`:""}`;
+  $("#util-dir").innerHTML = `<a class="util-link" href="/enviar">Envie seu artigo</a><a class="util-btn" href="${S.editor&&nPend()?"/#redacao-envios":"/#redacao"}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Redação${S.editor&&nPend()?`<span class="badge" title="Artigos aguardando aprovação">${nPend()}</span>`:""}</a>${S.editor&&!S.demo?` <button data-acao="sair">Sair</button>`:""}`;
   const r=rota();
   const itens=[["","Capa"],...Object.entries(EDITORIAS).map(([k,e])=>[k,e.nome]),["opiniao","Opinião"]];
   const ativo = r.startsWith("m-") ? (S.artigos.find(a=>"m-"+a.id===r)?.editoria) : r;
   $("#nav").innerHTML = itens.map(([k,t])=>`<a href="/#${k}" ${EDITORIAS[k]?`data-ed="${k}"`:""} class="${ativo===k?"on":""}">${t}</a>`).join("");
-  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="/#${k}">${t}</a>`).join("") + `<a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/#redacao">Redação</a>`;
+  $("#rodape-nav").innerHTML = itens.slice(1).map(([k,t])=>`<a href="/#${k}">${t}</a>`).join("") + `<a href="/enviar">Envie seu artigo</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/#redacao">Redação</a>`;
   const ult = ordenar(publicados()).slice(0,6);
   $("#ticker").hidden = !ult.length || r.startsWith("redacao");
   const itensT = ult.map(a=>`<a href="${link(a)}"><time>${esc(horaCurta(a.publicadoEm))}</time><span>${esc(a.titulo)}</span></a>`).join("");
@@ -768,6 +956,9 @@ function render(scrollTop){
   else if(r==="busca") h=telaBusca();
   else if(r==="sobre"){ h=telaSobre(); }
   else if(r==="privacidade"){ h=telaPrivacidade(); }
+  else if(r==="enviar"){ h=telaEnviar(); }
+  else if(r==="redacao-envios"){ h=telaRedacaoEnvios(); }
+  else if(r==="redacao-envio"){ h=telaRedacaoEnvio(); }
   else if(r.startsWith("m-")) h=telaMateria(r.slice(2));
   else if(r==="redacao") h=telaRedacaoLista();
   else if(r==="redacao-nova"||r==="redacao-editar"){ if(!S.form) abrirForm(r==="redacao-editar"?S.editandoId:null); h=telaRedacaoForm(); }
@@ -778,6 +969,7 @@ function render(scrollTop){
   const aviso = S.demo && r.startsWith("redacao") ? `<div class="aviso" style="margin-bottom:18px"><b>Modo demonstração.</b> O site ainda não está ligado ao Supabase, então o que você publica aqui fica só neste navegador. Siga o arquivo LEIA-ME para ativar o banco de dados.</div>` : "";
   main.innerHTML=`<div class="wrap">${aviso}${h}</div>`;
   if(r==="sobre") document.title="Sobre | "+(S.config.nome||"CX inFoco");
+  if(r==="enviar") document.title="Envie seu artigo | "+(S.config.nome||"CX inFoco");
   if(r==="privacidade") document.title="Política de Privacidade | "+(S.config.nome||"CX inFoco");
   if(r.startsWith("m-")){ const am=[...S.artigos,...S.rascunhos].find(x=>x.id===r.slice(2)); if(am) document.title = am.titulo+" | "+(S.config.nome||"CX inFoco"); }
   iniciarCarrossel();
@@ -785,7 +977,7 @@ function render(scrollTop){
   ajustarMais();
   if(scrollTop) window.scrollTo(0,0);
 }
-function formAberto(){ const r=rota(); return r==="redacao-nova"||r==="redacao-editar"||r==="redacao-config"||r==="redacao-pub"; }
+function formAberto(){ const r=rota(); return (r==="enviar"&&S.envForm&&!S.envForm.enviado)||r==="redacao-nova"||r==="redacao-editar"||r==="redacao-config"||r==="redacao-pub"; }
 function renderSeguro(){ if(formAberto()) renderShell(); else render(false); }
 
 /* ---------- formulário ---------- */
@@ -866,6 +1058,9 @@ function aoMudarRota(){
   else if(r!=="redacao-editar"){ S.form=null; S.editandoId=null; }
   if(r!=="redacao-pub"){ S.pubForm=null; S.latForm=null; S.meioForm=null; }
   if(r!=="redacao-config") S.ctaImg=undefined;
+  if(r!=="enviar") S.envForm=null;
+  if(r!=="redacao-envio"){ S.envioAtual=null; }
+  if(r==="redacao-envios"||r==="redacao") carregarEnvios();
   S.confirmar=null; render(true);
   Rastreio.visita();
 }
@@ -883,7 +1078,7 @@ window.addEventListener("popstate",aoMudarRota);
 document.addEventListener("click",e=>{
   const a=e.target.closest("a[href]"); if(!a || a.target==="_blank" || e.ctrlKey || e.metaKey || e.shiftKey || e.button>0) return;
   const h=a.getAttribute("href");
-  if(h.startsWith("/materia/") || h.startsWith("/#") || h==="/" || h==="/sobre" || h==="/privacidade"){
+  if(h.startsWith("/materia/") || h.startsWith("/#") || h==="/" || h==="/sobre" || h==="/privacidade" || h==="/enviar"){
     if(a.dataset.tag) return;
     e.preventDefault();
     if(location.pathname+location.hash===h) { aoMudarRota(); return; }
@@ -904,6 +1099,7 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="form-materia") salvarMateria();
   if(e.target.id==="form-config") salvarConfig();
   if(e.target.id==="form-login") entrar();
+  if(e.target.id==="form-envio") enviarArtigo();
 });
 document.addEventListener("click",async e=>{
   const dd=e.target.closest("[data-dias]");
@@ -916,6 +1112,8 @@ document.addEventListener("click",async e=>{
   if(lt){ lerPubForm(); S.latForm[+lt.dataset.lattirar].imagem=""; render(); return; }
   const tp=e.target.closest("[data-pubtirar]");
   if(tp){ lerPubForm(); S.pubForm[+tp.dataset.pubtirar][tp.dataset.campo||"imagem"]=""; render(); return; }
+  const ev=e.target.closest("[data-envio]");
+  if(ev){ e.preventDefault(); abrirEnvio(ev.dataset.envio); return; }
   const t=e.target.closest("[data-editar],[data-pedir],[data-excluir],[data-destaque],[data-acao],[data-fmt],[data-tag]"); if(!t) return;
   if(t.dataset.tag){ e.preventDefault(); S.busca=t.dataset.tag; if(rota()==="busca") render(true); else irPara("busca"); return; }
   if(t.dataset.fmt){ formatar(t.dataset.fmt); return; }
@@ -932,7 +1130,14 @@ document.addEventListener("click",async e=>{
     return;
   }
   const ac=t.dataset.acao;
-  if(ac==="sair"){ await API.sair(); S.editor=false; await recarregar(); irPara(""); toast("Você saiu da Redação"); return; }
+  if(ac==="sair"){ await API.sair(); S.editor=false; S.envios=[]; await recarregar(); irPara(""); toast("Você saiu da Redação"); return; }
+  if(ac==="env-tirar"){ S.envForm[t.dataset.campo]=""; const b=$("#env-prev-"+t.dataset.campo); if(b) b.innerHTML=""; t.remove(); return; }
+  if(ac==="envio-publicar"||ac==="envio-rascunho"){ await aprovarEnvio(ac==="envio-publicar"?"publicado":"rascunho", t); return; }
+  if(ac==="envio-recusar"){ await mudarEnvio({status:"recusado", analisado_em:new Date().toISOString()}, "Envio recusado"); return; }
+  if(ac==="envio-reabrir"){ await mudarEnvio({status:"pendente", analisado_em:null}, "Envio voltou para pendentes"); return; }
+  if(ac==="envio-excluir-pedir"){ S.confirmar="envio"; render(); return; }
+  if(ac==="envio-excluir"){ try{ await API.excluirEnvio(S.envioAtual.id); toast("Envio excluído"); await carregarEnvios(); irPara("redacao-envios"); }catch(err){ toast("Não foi possível excluir: "+(err?.message||"")); } return; }
+  if(ac==="envios-filtro"){ S.enviosFiltro=t.dataset.f; render(); return; }
   if(ac==="cta-tirar"){ S.ctaImg=""; const pv=$("#c-cta-prev"); if(pv) pv.outerHTML=`<span class="meta" id="c-cta-prev">Sem foto (aparece um ícone). Clique em Salvar configurações.</span>`; t.remove(); return; }
   if(ac==="salvar-pub"){ t.disabled=true; await salvarPub(); t.disabled=false; return; }
   if(ac==="url-titulo"){ const tt=$("#f-titulo").value.trim(); if(!tt){ toast("Escreva o título primeiro"); return; } $("#f-url").value=novoId(tt, S.editandoId); return; }
@@ -983,6 +1188,11 @@ async function importarMaterias(file){
   alert(msg);
 }
 document.addEventListener("change",async e=>{
+  if(e.target.id==="env-foto"||e.target.id==="env-imagem"){ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+    const campo=e.target.id==="env-foto"?"foto":"imagem";
+    try{ const d = campo==="foto" ? await comprimir(f,360,60000) : await comprimir(f,1400,170000); S.envForm[campo]=d;
+      const b=$("#env-prev-"+campo); if(b) b.innerHTML=`<img ${campo==="foto"?'class="redonda"':""} src="${d}" alt=""><button type="button" class="btn pequeno perigo" data-acao="env-tirar" data-campo="${campo}">Remover</button>`;
+    }catch{ toast("Não foi possível ler a imagem. Tente outra foto (JPG ou PNG)."); } return; }
   if(e.target.id==="c-cta-img"){ const f=e.target.files[0]; e.target.value=""; if(!f) return;
     try{ S.ctaImg=await comprimir(f,360,60000); const pv=$("#c-cta-prev"); if(pv) pv.outerHTML=`<img class="cta-prev" id="c-cta-prev" src="${S.ctaImg}" alt="">`; toast("Foto pronta. Clique em Salvar configurações."); }catch{ toast("Não foi possível ler a imagem."); } return; }
   if(e.target.id==="f-importar"){ const f=e.target.files[0]; e.target.value=""; if(f) await importarMaterias(f); return; }
@@ -1305,7 +1515,7 @@ async function entrar(){
   const email=$("#l-email").value.trim(), senha=$("#l-senha").value, erro=$("#l-erro"), b=$("#l-botao");
   if(!email||!senha){ erro.textContent="Preencha e-mail e senha."; erro.hidden=false; return; }
   b.disabled=true; b.textContent="Entrando…";
-  try{ await API.entrar(email,senha); S.editor=true; await recarregar(); render(true); toast("Bem-vindo à Redação"); }
+  try{ await API.entrar(email,senha); S.editor=true; await recarregar(); render(true); toast("Bem-vindo à Redação"); carregarEnvios(); }
   catch(e){ b.disabled=false; b.textContent="Entrar"; const m=String(e?.message||"");
     erro.textContent = m==="sem-banco" ? "O login ainda não está ativo: conecte o Supabase seguindo o arquivo LEIA-ME." :
       /invalid login credentials/i.test(m) ? "E-mail ou senha incorretos. (Supabase: Invalid login credentials)" :
@@ -1512,6 +1722,11 @@ const API = usarSupabase ? {
   async salvarPub(p){ const {error} = await sb.from("config").upsert({id:"publicidade", dados:p}); if(error) throw error; },
   async salvarPubMeio(p){ const {error} = await sb.from("config").upsert({id:"publicidade-meio", dados:p}); if(error) throw error; },
   async estatisticas(dias){ const {data,error} = await sb.rpc("estatisticas",{dias}); if(error) throw error; return data||{}; },
+  async enviarArtigo(row){ const {error} = await sb.from("envios").insert(row); if(error) throw error; },
+  async listarEnvios(){ const {data,error} = await sb.from("envios").select("id,criado_em,status,nome,cargo,titulo,editoria,materia_id").order("criado_em",{ascending:false}).limit(300); if(error) throw error; return data||[]; },
+  async lerEnvio(id){ const {data,error} = await sb.from("envios").select("*").eq("id",id).single(); if(error) throw error; return data; },
+  async atualizarEnvio(id,c){ const {error} = await sb.from("envios").update(c).eq("id",id); if(error) throw error; },
+  async excluirEnvio(id){ const {error} = await sb.from("envios").delete().eq("id",id); if(error) throw error; },
   async entrar(email,senha){ const {error} = await sb.auth.signInWithPassword({email:email.toLowerCase(), password:senha}); if(error) throw error; },
   async sair(){ await sb.auth.signOut(); }
 } : {
@@ -1526,8 +1741,19 @@ const API = usarSupabase ? {
   async salvarPub(p){ const d=this.ler(); d.publicidade=p; this.gravar(d); },
   async salvarPubMeio(p){ const d=this.ler(); d.publicidadeMeio=p; this.gravar(d); },
   async estatisticas(dias){ return exemploStats(dias); },
+  async enviarArtigo(row){ const d=this.ler(); d.envios=d.envios||[]; d.envios.unshift({...row,id:"e"+Date.now(),criado_em:new Date().toISOString(),status:"pendente"}); this.gravar(d); },
+  async listarEnvios(){ return (this.ler().envios||[]).map(({corpo,foto,imagem,bio,...x})=>x); },
+  async lerEnvio(id){ const e=(this.ler().envios||[]).find(x=>x.id===id); if(!e) throw new Error("não encontrado"); return e; },
+  async atualizarEnvio(id,c){ const d=this.ler(); d.envios=(d.envios||[]).map(x=>x.id===id?{...x,...c}:x); this.gravar(d); },
+  async excluirEnvio(id){ const d=this.ler(); d.envios=(d.envios||[]).filter(x=>x.id!==id); this.gravar(d); },
   async entrar(){ throw new Error("sem-banco"); }, async sair(){}
 };
+async function carregarEnvios(){
+  if(!S.editor) return;
+  try{ S.envios = await API.listarEnvios(); S.enviosErro=""; }
+  catch(e){ S.envios=[]; S.enviosErro = /relation|does not exist|schema cache|envios/i.test(String(e?.message||"")) ? "tabela" : String(e?.message||"erro"); }
+  renderSeguro();
+}
 async function recarregar(){
   try{ await API.carregar(); S.erroCarga=""; }
   catch(e){ S.erroCarga="Verifique a conexão com a internet e as chaves do Supabase no arquivo config.js."; console.error(e); }
@@ -1539,6 +1765,7 @@ render();
   try{ await API.iniciar(); }catch(e){ console.error(e); }
   await recarregar();
   S.carregado=true; render();
+  carregarEnvios();
   Rastreio.visita();
 })();
 </script>

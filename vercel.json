@@ -32,6 +32,10 @@
     {
       "source": "/privacidade",
       "destination": "/index.html"
+    },
+    {
+      "source": "/enviar",
+      "destination": "/index.html"
     }
   ]
 }
